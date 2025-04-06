@@ -13,7 +13,7 @@ import {
   Paper,
 } from '@mui/material'
 import { UserRepository } from '../../../firebase/firestore/repositories/user/user-repository'
-import { toTimestamp } from '../../../functions/dateTimeUtils/time-conversion'
+import { toTimestamp } from '../../../functions/dateTime-utils/time-conversion'
 import { ISODate } from '../../../types/datetime-types'
 import { Gender } from '../../../types/firebase/util-document-types'
 import { useNavigate } from 'react-router-dom'
@@ -32,6 +32,8 @@ const UserSetup: React.FC = () => {
         displayName: nickname,
         birthdate: toTimestamp(birthdate),
         gender,
+        friendIds: [],
+        mutualFollows: [],
       }
 
       const repo = new UserRepository()
