@@ -1,0 +1,27 @@
+{
+  "top.contents": "いらっしゃい！！\nキミは新しい子かな？",
+  "top.signUp.text": "そうだよ！\nはじめて来たよ。",
+  "top.signIn.text": "いや。前にも\n来たことあるよ！",
+  "signIn.contents": "おかえり！\n何を使ってログインする？",
+  "signIn.google.text": "Googleアカウントを使う",
+  "signIn.email.text": "メールを使う",
+  "signUp.contents": "ようこそ、はじめての子！まずは登録をしよう！\n何を使って登録する？",
+  "signUp.google.text": "Googleアカウントを使う",
+  "signUp.email.text": "メールを使う",
+  "inputSignInEmail.contents": "メールとパスワードを教えて！",
+  "inputSignUpEmail.contents": "登録する、メールとパスワードを教えて",
+  "inputUserName.contents": "キミのこと、なんて呼べばいいかな？",
+  "checkAuthEmail": "メールを確認するから少し待ってね",
+  "retryAuthGoogle.contents": "失敗したみたい。もう一回試してみて。",
+  "retryAuthGoogle.text": "もう一度試す",
+  "checkAuthGoogle": "確認するから少し待ってね",
+  "inputUserName.label": "ニックネーム",
+  "checkUserName": "確認するから少し待ってね",
+  "finish.contents": "登録が終わったよ。\nようこそ！",
+
+  "inputEmailLabel": "メール",
+  "inputPasswordLabel": "パスワード",
+  "enter": "決定",
+
+  "userNameExist": "$[existUserName]って名前の子はもういるんだ。\n他の呼び方はないかな？"
+}

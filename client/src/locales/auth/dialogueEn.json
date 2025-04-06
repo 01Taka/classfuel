@@ -1,0 +1,18 @@
+{
+  "top.contents": "Welcome!!\nAre you new here?",
+  "top.signIn.text": "Yes! I'm new here.",
+  "top.signUp.text": "No, I've been here before!",
+  "signIn.contents": "Welcome, newcomer! Let's get you registered!\nHow would you like to sign up?",
+  "signIn.google.text": "Use Google account",
+  "signIn.email.text": "Use email",
+  "signUp.contents": "Welcome back!\nHow would you like to log in?",
+  "signUp.google.text": "Use Google account",
+  "signUp.email.text": "Use email",
+  "inputSignInEmail.contents": "Please enter your email address.",
+  "inputSignInEmail.label": "Email",
+  "inputSignUpEmail.contents": "Please enter the email address for registration.",
+  "inputSignUpEmail.label": "Email",
+  "inputUserName.contents": "I'd like to know your name!",
+  "inputUserName.label": "Name",
+  "finish.contents": "You're all set!\nWelcome!"
+}

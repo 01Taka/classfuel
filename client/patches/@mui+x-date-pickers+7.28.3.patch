@@ -1,0 +1,20 @@
+diff --git a/node_modules/@mui/x-date-pickers/AdapterDateFns/AdapterDateFns.js b/node_modules/@mui/x-date-pickers/AdapterDateFns/AdapterDateFns.js
+index d801eca..1482659 100644
+--- a/node_modules/@mui/x-date-pickers/AdapterDateFns/AdapterDateFns.js
++++ b/node_modules/@mui/x-date-pickers/AdapterDateFns/AdapterDateFns.js
+@@ -43,7 +43,6 @@ import startOfYear from 'date-fns/startOfYear';
+ import isWithinInterval from 'date-fns/isWithinInterval';
+ import defaultLocale from 'date-fns/locale/en-US';
+ // @ts-ignore
+-import longFormatters from 'date-fns/_lib/format/longFormatters';
+ import { AdapterDateFnsBase } from "../AdapterDateFnsBase/index.js";
+ /**
+  * Based on `@date-io/date-fns`
+@@ -84,7 +83,6 @@ export class AdapterDateFns extends AdapterDateFnsBase {
+     super({
+       locale: locale ?? defaultLocale,
+       formats,
+-      longFormatters
+     });
+     this.parse = (value, format) => {
+       if (value === '') {
