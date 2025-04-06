@@ -5,9 +5,9 @@ import {
 import { Visibility } from '../../util-document-types'
 
 interface VoiceMessageData {
-  userId: string
   audioUrl: string
   visibility: Visibility
+  likes: number
 }
 
 export type VoiceMessageRead = BaseDocumentRead & VoiceMessageData

@@ -1,0 +1,2 @@
+# Firestoreセキュリティルールのデプロイ
+firebase deploy --only firestore:rules

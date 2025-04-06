@@ -1,10 +1,10 @@
 import HomeIcon from '@mui/icons-material/Home'
-import Chat from '@mui/icons-material/Search'
 import PersonIcon from '@mui/icons-material/Person'
 import { NavItem } from '../types/components/navigation-type'
+import { VoiceChat } from '@mui/icons-material'
 
 export const defaultNavItems: NavItem[] = [
   { label: 'Home', icon: <HomeIcon />, value: '/' },
-  { label: 'チャット', icon: <Chat />, value: '/chat' },
+  { label: 'ボイス', icon: <VoiceChat />, value: '/voice-share' },
   { label: 'Profile', icon: <PersonIcon />, value: '/profile' },
 ]

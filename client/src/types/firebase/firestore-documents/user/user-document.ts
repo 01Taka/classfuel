@@ -9,6 +9,8 @@ interface UserData {
   displayName: string
   birthdate: Timestamp
   gender: Gender
+  friendIds: string[]
+  mutualFollows: string[]
 }
 
 export type UserRead = BaseDocumentRead & UserData
