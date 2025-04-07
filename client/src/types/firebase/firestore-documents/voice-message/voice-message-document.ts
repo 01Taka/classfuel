@@ -5,7 +5,7 @@ import {
 import { Visibility } from '../../util-document-types'
 
 interface VoiceMessageData {
-  audioUrl: string
+  audioPath: string
   visibility: Visibility
   likes: number
 }

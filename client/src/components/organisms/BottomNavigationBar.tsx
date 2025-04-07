@@ -1,7 +1,7 @@
 import { BottomNavigation, Paper } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
 import BottomNavAction from '../molecules/BottomNavAction'
-import { NavItem } from '../../types/components/navigation-type'
+import { NavItem } from '../../types/components/navigation-types'
 
 interface BottomNavigationBarProps {
   items: NavItem[]

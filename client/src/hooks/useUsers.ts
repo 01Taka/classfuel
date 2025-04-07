@@ -52,7 +52,7 @@ const useUserService = () => {
     )
     fetchedUsers.forEach((user) => {
       if (user) {
-        result[user.id] = user
+        result[user.docId] = user
         setUser(user)
       }
     })

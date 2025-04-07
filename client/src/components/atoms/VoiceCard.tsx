@@ -1,7 +1,7 @@
 import React from 'react'
 import { Card, CardContent, Typography, IconButton } from '@mui/material'
 import { PlayArrow } from '@mui/icons-material'
-import { Voice } from '../../types/components/voice-type'
+import { Voice } from '../../types/components/voice-types'
 
 interface VoiceCardProps {
   voice: Voice

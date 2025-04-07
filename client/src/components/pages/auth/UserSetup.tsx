@@ -17,17 +17,19 @@ import { toTimestamp } from '../../../functions/dateTime-utils/time-conversion'
 import { ISODate } from '../../../types/datetime-types'
 import { Gender } from '../../../types/firebase/util-document-types'
 import { useNavigate } from 'react-router-dom'
+import useCurrentUser from '../../../hooks/useCurrentUser'
 
 const nextPage = '/'
 
 const UserSetup: React.FC = () => {
+  const { uid } = useCurrentUser()
   const navigate = useNavigate()
   const [nickname, setNickname] = useState('')
   const [birthdate, setBirthdate] = useState<ISODate | ''>('')
   const [gender, setGender] = useState<Gender | ''>('')
 
   const handleSubmit = async () => {
-    if (nickname && birthdate && gender) {
+    if (uid && nickname && birthdate && gender) {
       const userInfo = {
         displayName: nickname,
         birthdate: toTimestamp(birthdate),
@@ -37,7 +39,7 @@ const UserSetup: React.FC = () => {
       }
 
       const repo = new UserRepository()
-      await repo.create(userInfo)
+      await repo.createWithId(userInfo, uid)
 
       navigate(nextPage)
     }

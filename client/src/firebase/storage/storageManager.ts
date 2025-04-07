@@ -4,166 +4,107 @@ import {
   uploadBytesResumable,
   getDownloadURL,
   deleteObject,
+  StorageError,
+  UploadTaskSnapshot,
 } from 'firebase/storage'
 import { storage } from '../firebase'
-import { FileExtension } from '../../constants/file-constants'
+
+type UploadOptions = {
+  onStateChanged?: (data: {
+    snapshot: UploadTaskSnapshot
+    progress: number
+  }) => void
+  onFailedUpload?: (error: StorageError) => void
+  onCompletedUpload?: () => void
+}
+
+type UploadData = {
+  path: string | string[]
+  data: Blob | Uint8Array | ArrayBuffer | File
+}
 
 export class StorageManager {
-  constructor(private storage: FirebaseStorage = storage) {}
+  constructor(private storage: FirebaseStorage) {}
 
-  /**
-   * 複数ファイルのアップロードを行い、アップロード成功したファイルのID一覧を返す
-   */
-  async uploadFiles(
-    path: string,
-    id: string,
-    startIndex: number,
-    files: File[]
-  ): Promise<string[]> {
-    const uploadPromises = files.map((file, index) => {
-      const fileId = `${id}_${startIndex + index}`
-      return this.uploadFile(path, fileId, file).catch((error) => {
-        console.error(`ファイル ${index} のアップロードに失敗しました:`, error)
-        return null
-      })
-    })
-
-    const results = await Promise.all(uploadPromises)
-    return results.filter((url): url is string => url !== null)
+  private normalizePath(path: string | string[]): string {
+    return Array.isArray(path) ? path.join('/') : path
   }
 
-  private getFileId(path: string, id: string): string {
-    return `${path}_${id}`
+  private encodePath(path: string): string {
+    return path.replace(/\//g, '_')
   }
 
-  /**
-   * 単一ファイルのアップロード処理
-   */
-  async uploadFile(
-    path: string,
-    id: string,
-    file: File,
-    options: { format?: FileExtension; maxSizeMB?: number } = {}
+  private decodePath(fileId: string): string {
+    return fileId.replace(/_/g, '/')
+  }
+
+  async upload(
+    path: string | string[],
+    data: Blob | Uint8Array | ArrayBuffer | File,
+    options?: UploadOptions
   ): Promise<string> {
-    const { format = this.getFileExtension(file.type), maxSizeMB = 5 } = options
-
-    if (file.size > maxSizeMB * 1024 * 1024) {
-      throw new Error(
-        `ファイルサイズが大きすぎます。最大 ${maxSizeMB}MB です。`
-      )
-    }
-
-    const fileExtension = this.getFileExtension(file.type)
-    if (format && fileExtension !== format) {
-      throw new Error(`ファイル形式が一致しません。指定形式: ${format}`)
-    }
-
-    const storageRef = ref(this.storage, path)
-    const fileRef = ref(storageRef, `${id}.${format}`)
-
-    await new Promise<void>((resolve, reject) => {
-      const uploadTask = uploadBytesResumable(fileRef, file)
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-          console.log(`Upload is ${progress.toFixed(2)}% done`)
-        },
-        (error) => {
-          console.error('アップロード中にエラーが発生しました:', error)
-          reject(error)
-        },
-        () => {
-          console.log('アップロードが完了しました')
-          resolve()
-        }
-      )
-    })
-
-    return this.getFileId(path, id)
-  }
-
-  async uploadData(
-    path: string,
-    id: string,
-    data: Blob | Uint8Array | ArrayBuffer | File
-  ) {
-    const storageRef = ref(this.storage, path)
-    const fileRef = ref(storageRef, `${id}`)
+    const storagePath = this.normalizePath(path)
+    const fileRef = ref(this.storage, storagePath)
 
     await new Promise<void>((resolve, reject) => {
       const uploadTask = uploadBytesResumable(fileRef, data)
+
       uploadTask.on(
         'state_changed',
         (snapshot) => {
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-          console.log(`Upload is ${progress.toFixed(2)}% done`)
+          const progress = snapshot.bytesTransferred / snapshot.totalBytes
+          options?.onStateChanged?.({ snapshot, progress })
         },
         (error) => {
-          console.error('アップロード中にエラーが発生しました:', error)
+          console.error('アップロード中にエラー:', error)
+          options?.onFailedUpload?.(error)
           reject(error)
         },
         () => {
-          console.log('アップロードが完了しました')
+          console.log('アップロード完了:', storagePath)
+          options?.onCompletedUpload?.()
           resolve()
         }
       )
     })
 
-    return this.getFileId(path, id)
+    return this.encodePath(storagePath)
   }
 
-  /**
-   * 単一ファイルのダウンロードURLを取得する
-   */
+  async multipleUpload(
+    files: UploadData[],
+    options?: UploadOptions
+  ): Promise<string[]> {
+    return Promise.all(
+      files.map(({ path, data }) => this.upload(path, data, options))
+    )
+  }
+
   async getFileUrl(fileId: string): Promise<string> {
     if (!fileId) return ''
-    const adjustedFileId = fileId.replace(/_/g, '/')
-    const fileRef = ref(this.storage, adjustedFileId)
+
     try {
-      const url = await getDownloadURL(fileRef)
-      return url
+      const fileRef = ref(this.storage, this.decodePath(fileId))
+      return await getDownloadURL(fileRef)
     } catch (error) {
-      console.error('ファイルの取得に失敗しました:', error)
+      console.error('ダウンロードURL取得失敗:', error)
       throw error
     }
   }
 
-  /**
-   * 複数ファイルのダウンロードURLを取得する
-   */
   async getFileUrls(fileIds: string[]): Promise<string[]> {
     return Promise.all(fileIds.map((id) => this.getFileUrl(id)))
   }
 
-  /**
-   * ファイルの削除を行う
-   */
-  async deleteFile(fileId: string): Promise<void> {
+  async delete(fileId: string): Promise<void> {
     try {
-      const fileRef = ref(this.storage, fileId)
+      const fileRef = ref(this.storage, this.decodePath(fileId))
       await deleteObject(fileRef)
-      console.log('ファイルが削除されました')
+      console.log('ファイル削除成功:', fileId)
     } catch (error) {
-      console.error('ファイルの削除に失敗しました:', error)
+      console.error('ファイル削除失敗:', error)
       throw error
     }
-  }
-
-  /**
-   * URLまたはMIMEタイプからファイル拡張子を抽出する
-   */
-  getFileExtension(urlOrType: string): FileExtension | '' {
-    const trimmed = urlOrType.split('?')[0].split('#')[0]
-    const decoded = decodeURIComponent(trimmed)
-    const parts = decoded.split('.')
-    const extension = (
-      parts.length > 1 ? (parts.pop()?.toLowerCase() ?? '') : ''
-    ) as FileExtension
-
-    return Object.values(FileExtension).includes(extension) ? extension : ''
   }
 }
 

@@ -1,6 +1,6 @@
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { getAuth } from 'firebase/auth'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { UserRead } from '../types/firebase/firestore-documents/user/user-document'
 import useUserService from './useUsers'
 
@@ -9,6 +9,8 @@ const useCurrentUser = () => {
   const [firebaseUser, loading, error] = useAuthState(auth)
   const [user, setUser] = useState<UserRead | null>(null)
   const { fetchUserById } = useUserService()
+
+  const uid = useMemo(() => firebaseUser?.uid ?? null, [firebaseUser])
 
   useEffect(() => {
     if (!firebaseUser) {
@@ -24,7 +26,7 @@ const useCurrentUser = () => {
     fetch()
   }, [firebaseUser?.uid])
 
-  return { user, loading, error }
+  return { uid, user, loading, error }
 }
 
 export default useCurrentUser

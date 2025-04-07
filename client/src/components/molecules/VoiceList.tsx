@@ -1,6 +1,6 @@
 import React from 'react'
 import { Stack, Typography } from '@mui/material'
-import { Voice } from '../../types/components/voice-type'
+import { Voice } from '../../types/components/voice-types'
 import VoiceCard from '../atoms/VoiceCard'
 
 interface VoiceListProps {
