@@ -2,6 +2,7 @@ import { Card, Stack, Typography } from '@mui/material'
 import React from 'react'
 import OptionButtonGroup from '../molecules/OptionButtonGroup'
 import { blue } from '@mui/material/colors'
+import MessageComposer from '../molecules/MessageComposer'
 
 interface ChoicePanelProps {}
 
@@ -18,6 +19,7 @@ const ChoicePanel: React.FC<ChoicePanelProps> = ({}) => {
           onClick={() => {}}
         />
       </Stack>
+      <MessageComposer onSendText={() => {}} />
     </Card>
   )
 }
