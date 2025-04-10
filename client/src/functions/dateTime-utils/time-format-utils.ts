@@ -56,6 +56,35 @@ export const decomposeMilliseconds = (
   return { hours, minutes, seconds, milliseconds }
 }
 
+type TimeUnit = 'hours' | 'minutes' | 'seconds' | 'milliseconds'
+
+interface FormatOptions {
+  display?: TimeUnit[] // 表示する順序
+  delimiter?: string // 区切り文字
+  units?: Partial<Record<TimeUnit, string>> // 単位記号（省略可）
+}
+
+export const formatDuration = (
+  duration: number,
+  options?: FormatOptions
+): string => {
+  const {
+    display = ['hours', 'minutes'],
+    delimiter = '',
+    units = {},
+  } = options ?? {}
+
+  const decomposedTimes = decomposeMilliseconds(duration)
+
+  return display
+    .map((unit) => {
+      const value = decomposedTimes[unit] ?? 0
+      const suffix = units[unit] ?? ''
+      return `${value}${suffix}`
+    })
+    .join(delimiter)
+}
+
 /**
  * ミリ秒を指定したオプションに基づきフォーマットする関数
  * ・デジタル形式（例："01 : 05 : 09" または "1 : 5 : 9"）
@@ -65,7 +94,7 @@ export const decomposeMilliseconds = (
  * @param options - フォーマットオプション
  * @returns フォーマットされた時間文字列
  */
-export const formatDuration = (
+export const formatDuration_prev = (
   ms: number,
   options?: DurationFormatOptions
 ): string => {
