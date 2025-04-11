@@ -9,12 +9,13 @@ interface UserData {
   displayName: string
   birthdate: Timestamp
   gender: Gender
-  session: StudySession | null // 現在のセッション情報（nullの場合はセッション中でない）
+  session: UserSession | null // 現在のセッション情報（nullの場合はセッション中でない）
 }
 
-interface StudySession {
+export interface UserSession {
   type: 'study' | 'break' // セッションの種別
   startedAt: Timestamp
+  latestStartedAt: Timestamp
   expectedEndAt: Timestamp // ユーザーが設定した予定終了時刻
   stoppedAt: Timestamp | null // 途中で手動停止された場合に記録
   status: 'running' | 'stopped'

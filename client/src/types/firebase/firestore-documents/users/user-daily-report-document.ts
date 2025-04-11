@@ -1,10 +1,11 @@
+import { ISODate } from '../../../datetime-types'
 import {
   BaseDocumentRead,
   BaseDocumentWrite,
 } from '../../firestore-document-types'
 
 export interface DailyReportData {
-  date: string // YYYY-MM-DD形式の日付
+  date: ISODate // YYYY-MM-DD形式の日付
   studyTime: number // で記録
 }
 
