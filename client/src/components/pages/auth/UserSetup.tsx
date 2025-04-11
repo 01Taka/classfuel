@@ -12,7 +12,7 @@ import {
   Typography,
   Paper,
 } from '@mui/material'
-import { UserRepository } from '../../../firebase/firestore/repositories/user/user-repository'
+import { UserRepository } from '../../../firebase/firestore/repositories/users/user-repository'
 import { toTimestamp } from '../../../functions/dateTime-utils/time-conversion'
 import { ISODate } from '../../../types/datetime-types'
 import { Gender } from '../../../types/firebase/util-document-types'

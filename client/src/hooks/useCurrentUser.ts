@@ -1,7 +1,7 @@
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { getAuth } from 'firebase/auth'
 import { useEffect, useMemo, useState } from 'react'
-import { UserRead } from '../types/firebase/firestore-documents/user/user-document'
+import { UserRead } from '../types/firebase/firestore-documents/users/user-document'
 import useUserService from './useUsers'
 
 const useCurrentUser = () => {

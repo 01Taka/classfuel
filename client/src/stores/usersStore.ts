@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { UserRead } from '../types/firebase/firestore-documents/user/user-document'
+import { UserRead } from '../types/firebase/firestore-documents/users/user-document'
 
 type UsersStore = {
   users: Record<string, UserRead>

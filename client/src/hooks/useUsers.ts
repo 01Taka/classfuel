@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
-import { UserRepository } from '../firebase/firestore/repositories/user/user-repository'
+import { UserRepository } from '../firebase/firestore/repositories/users/user-repository'
 import { useUsersStore } from '../stores/usersStore'
-import { UserRead } from '../types/firebase/firestore-documents/user/user-document'
+import { UserRead } from '../types/firebase/firestore-documents/users/user-document'
 
 const useUserService = () => {
   const { users, setUser } = useUsersStore()

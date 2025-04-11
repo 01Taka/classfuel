@@ -1,6 +1,6 @@
 import React from 'react'
 import ContainerCard from '../atoms/ContainerCard'
-import { Avatar, Box, Stack, Typography } from '@mui/material'
+import { Box, Stack, Typography } from '@mui/material'
 import { formatTime } from '../../functions/dateTime-utils/time-format-utils'
 import AvatarWithName from '../atoms/AvatarWithName'
 
