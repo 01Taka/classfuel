@@ -11,13 +11,13 @@ import { BaseDocumentRead } from '../../../types/firebase/firestore-document-typ
 
 // 個別ドキュメント用のコールバック
 export interface Callback<Read extends BaseDocumentRead> {
-  unsubscribe?: Unsubscribe
+  unsubscribe: Unsubscribe
   func: Map<string, (snapshot: DocumentSnapshot<Read>) => void>
 }
 
 // コレクション全体用のコールバック
 export interface CollectionCallback<Read extends BaseDocumentRead> {
-  unsubscribe?: Unsubscribe
+  unsubscribe: Unsubscribe
   func: Map<string, (snapshot: QuerySnapshot<Read>) => void>
 }
 
@@ -63,7 +63,7 @@ export class CallbacksHandler<Read extends BaseDocumentRead> {
     callback: (snapshot: DocumentSnapshot<Read>) => void,
     callbackId?: string,
     overwrite = false
-  ): string {
+  ): { callbackId: string; unsubscribe: Unsubscribe } {
     const key = `${collectionRef.path}/${documentId}`
     const cbId = callbackId ?? nanoid()
     let callbackEntry =
@@ -77,7 +77,11 @@ export class CallbacksHandler<Read extends BaseDocumentRead> {
         callbackEntry.func.set(cbId, callback)
       }
     }
-    return cbId
+
+    return {
+      callbackId: cbId,
+      unsubscribe: callbackEntry.unsubscribe,
+    }
   }
 
   /**
@@ -115,15 +119,15 @@ export class CallbacksHandler<Read extends BaseDocumentRead> {
     callback: (snapshot: QuerySnapshot<Read>) => void,
     callbackId?: string,
     overwrite = false
-  ): string {
+  ): { callbackId: string; unsubscribe: Unsubscribe } {
     const key = collectionRef.path
     let colCallback = this.collectionCallbacks.get(key)
+
     if (!colCallback) {
-      colCallback = { func: new Map() }
       const unsubscribe = onSnapshot(collectionRef, (querySnapshot) => {
         colCallback!.func.forEach((cb) => cb(querySnapshot))
       })
-      colCallback.unsubscribe = unsubscribe
+      colCallback = { func: new Map(), unsubscribe }
       this.collectionCallbacks.set(key, colCallback)
     }
     const cbId = callbackId ?? nanoid()
@@ -134,7 +138,10 @@ export class CallbacksHandler<Read extends BaseDocumentRead> {
         colCallback.func.set(cbId, callback)
       }
     }
-    return cbId
+    return {
+      callbackId: cbId,
+      unsubscribe: colCallback.unsubscribe,
+    }
   }
 
   /**

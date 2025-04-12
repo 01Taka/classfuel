@@ -7,6 +7,7 @@ import {
   QueryConstraint,
   QuerySnapshot,
   DocumentReference,
+  Unsubscribe,
 } from 'firebase/firestore'
 import BatchHandler from './batch-handler'
 import TransactionHandler from './transaction-handler'
@@ -89,8 +90,15 @@ abstract class FirestoreService<
     return formatData
   }
 
+  private removeUndefined<T extends Record<string, any>>(obj: T): Partial<T> {
+    return Object.fromEntries(
+      Object.entries(obj).filter(([_, v]) => v !== undefined)
+    ) as Partial<T>
+  }
+
   private organizePartialWriteData(data: Partial<Write>): Partial<Document> {
-    return this.filterPartialWriteData(data)
+    const formatData = this.filterPartialWriteData(data)
+    return this.removeUndefined(formatData)
   }
 
   // ======================================================================
@@ -282,7 +290,7 @@ abstract class FirestoreService<
     documentId: string,
     parentDocumentIds: string[] = [],
     callbackId?: string
-  ): string {
+  ): { callbackId: string; unsubscribe: Unsubscribe } {
     const collectionRef = this.getCollectionRef(
       parentDocumentIds
     ) as CollectionReference<Read>
@@ -299,7 +307,7 @@ abstract class FirestoreService<
     documentId: string,
     parentDocumentIds: string[] = [],
     callbackId?: string
-  ): string {
+  ): { callbackId: string; unsubscribe: Unsubscribe } {
     return this.addCallback(
       (snapshot) => callback(parseDocumentSnapshot(snapshot)),
       documentId,
@@ -323,7 +331,7 @@ abstract class FirestoreService<
     callback: (snapshot: QuerySnapshot<Read, DocumentData>) => void,
     parentDocumentIds: string[] = [],
     callbackId?: string
-  ): string {
+  ): { callbackId: string; unsubscribe: Unsubscribe } {
     const collectionRef = this.getCollectionRef(
       parentDocumentIds
     ) as CollectionReference<Read>
@@ -338,7 +346,7 @@ abstract class FirestoreService<
     callback: (data: Read[]) => void,
     parentDocumentIds: string[] = [],
     callbackId?: string
-  ): string {
+  ): { callbackId: string; unsubscribe: Unsubscribe } {
     return this.addCollectionCallback(
       (snapshot) => callback(parseQuerySnapshot(snapshot)),
       parentDocumentIds,

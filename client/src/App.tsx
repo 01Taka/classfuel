@@ -6,8 +6,11 @@ import UserSetup from './components/pages/auth/UserSetup'
 import Chat from './components/pages/Chat'
 import VoiceShare from './components/pages/VoiceShare'
 import Session from './components/pages/Session'
+import useInit from './hooks/init/useInit'
 
 function App() {
+  useInit()
+
   return (
     <Routes>
       <Route path="/*" element={<Home />} />

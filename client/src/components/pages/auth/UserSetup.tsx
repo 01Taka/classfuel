@@ -17,12 +17,12 @@ import { toTimestamp } from '../../../functions/dateTime-utils/time-conversion'
 import { ISODate } from '../../../types/datetime-types'
 import { Gender } from '../../../types/firebase/util-document-types'
 import { useNavigate } from 'react-router-dom'
-import useCurrentUser from '../../../hooks/useCurrentUser'
+import { useCurrentUserStore } from '../../../stores/currentUserStore'
 
 const nextPage = '/'
 
 const UserSetup: React.FC = () => {
-  const { uid } = useCurrentUser()
+  const { uid } = useCurrentUserStore()
   const navigate = useNavigate()
   const [nickname, setNickname] = useState('')
   const [birthdate, setBirthdate] = useState<ISODate | ''>('')
@@ -34,8 +34,7 @@ const UserSetup: React.FC = () => {
         displayName: nickname,
         birthdate: toTimestamp(birthdate),
         gender,
-        friendIds: [],
-        mutualFollows: [],
+        session: null,
       }
 
       const repo = new UserRepository()

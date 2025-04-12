@@ -28,7 +28,20 @@ service cloud.firestore {
 
       allow create: if isSignedIn() && isCreatingNewDocWithServerTimestamp();
 
-      allow update, delete: if false;
+      allow update: if isSignedIn();
+
+      allow delete: if false;
+
+      match /dailyReports/{reportId} {
+        
+        allow read: if isSignedIn() && request.auth.uid == userId;
+
+        allow create: if isSignedIn() && isCreatingNewDocWithServerTimestamp();
+
+        allow update: if isSignedIn() && request.auth.uid == userId;
+
+        allow delete: if false;
+      }
     }
 
     match /voiceMessages/{messageId} {
@@ -37,7 +50,9 @@ service cloud.firestore {
 
       allow create: if isSignedIn() && isCreatingNewDocWithServerTimestamp();
 
-      allow update, delete: if false;
+      allow update: if isSignedIn();
+
+      allow delete: if false;
     }
   }
 }

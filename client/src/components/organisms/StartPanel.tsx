@@ -8,23 +8,23 @@ import { MINUTES_IN_MILLISECOND } from '../../constants/datetime-constants'
 
 interface StartPanelProps {}
 
+const startButtonSettings = {
+  study: [
+    { timeMin: 10, explanation: 'ウォーミングアップ' },
+    { timeMin: 25, explanation: '短く一気に集中' },
+    { timeMin: 60, explanation: 'じっくり長めに集中' },
+  ],
+  break: [
+    { timeMin: 1, explanation: 'ちょっと休憩' },
+    { timeMin: 3, explanation: '気分転換' },
+    { timeMin: 5, explanation: 'リフレッシュ' },
+  ],
+}
+
 const StartPanel: React.FC<StartPanelProps> = ({}) => {
   const { handleStartSession } = useSessionService()
   const [mode, setMode] = React.useState<'study' | 'break'>('study')
   const navigate = useNavigate()
-
-  const startButtonSettings = {
-    study: [
-      { timeMin: 10, explanation: 'ウォーミングアップ' },
-      { timeMin: 25, explanation: '短く一気に集中' },
-      { timeMin: 60, explanation: 'じっくり長めに集中' },
-    ],
-    break: [
-      { timeMin: 1, explanation: 'ちょっと休憩' },
-      { timeMin: 3, explanation: '気分転換' },
-      { timeMin: 5, explanation: 'リフレッシュ' },
-    ],
-  }
 
   const handleStart = (mode: 'study' | 'break', duration: number) => {
     handleStartSession(mode, duration)

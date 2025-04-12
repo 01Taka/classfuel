@@ -1,14 +1,14 @@
 import React from 'react'
 import { Chat } from '../../types/components/chat-types'
-import useCurrentUser from '../../hooks/useCurrentUser'
 import MessageBubble from '../molecules/MessageBubble'
 import { Stack } from '@mui/material'
 import { blue, purple } from '@mui/material/colors'
+import { useCurrentUserStore } from '../../stores/currentUserStore'
 
 interface ChatWindowProps {}
 
 const ChatWindow: React.FC<ChatWindowProps> = ({}) => {
-  const { uid } = useCurrentUser()
+  const { uid } = useCurrentUserStore()
   const chats: Chat[] = [
     {
       messageId: 1,

@@ -1,30 +1,76 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import TimerDisplay from '../atoms/TimerDisplay'
 import Btn from '../atoms/Btn'
-import { Stack } from '@mui/material'
+import { Box, Stack } from '@mui/material'
+import { convertToMilliseconds } from '../../functions/dateTime-utils/time-conversion'
+import useSessionService from '../../features/session/hooks/useSessionService'
+import { useNavigate } from 'react-router-dom'
+import { useCurrentUserStore } from '../../stores/currentUserStore'
 
-interface StudyTimerProps {}
+const StudyTimer: React.FC = () => {
+  const navigate = useNavigate()
+  const { user } = useCurrentUserStore()
+  const { handleStopSession, handleRestartSession, handleFinishSession } =
+    useSessionService()
 
-const StudyTimer: React.FC<StudyTimerProps> = () => {
-  const endTimestamp = Date.now() + 25 * 60 * 1000 // 25分後のタイムスタンプを計算
-  const [remainingTime, setRemainingTime] = React.useState(
-    endTimestamp - Date.now()
-  )
+  const [diffTime, setDiffTime] = useState<number>(0)
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const currentTime = Date.now()
-      const newRemainingTime = endTimestamp - currentTime
-      setRemainingTime(newRemainingTime)
-    })
+    const endTimestamp = user?.session?.expectedEndAt
+    if (!endTimestamp) return
+
+    const endTimeMs = convertToMilliseconds(endTimestamp)
+
+    const updateRemainingTime = () => {
+      const now = Date.now()
+      setDiffTime(Math.max(endTimeMs - now, 0))
+    }
+
+    updateRemainingTime() // 初期更新
+    const interval = setInterval(updateRemainingTime, 1000)
+
     return () => clearInterval(interval)
-  }, []) // 1秒ごとに更新
+  }, [user?.session?.expectedEndAt])
+
+  const remainingTime = useMemo(() => {
+    if (user?.session?.status === 'running') {
+      return diffTime
+    } else {
+      const stoppedAt = convertToMilliseconds(user?.session?.stoppedAt || 0)
+      const expectedEndAt = convertToMilliseconds(
+        user?.session?.expectedEndAt || 0
+      )
+      return expectedEndAt - stoppedAt
+    }
+  }, [diffTime, user?.session])
+
+  const handleFinish = () => {
+    handleFinishSession()
+    navigate('/')
+  }
 
   return (
-    <Stack spacing={2} alignItems="center">
+    <Stack
+      spacing={2}
+      alignItems="center"
+      justifyContent="center"
+      height={'100vh'}
+    >
       <TimerDisplay timeMs={remainingTime} />
-      <Btn fullWidth>終了</Btn>
-      <Btn fullWidth>一時停止</Btn>
+      <Box py={5} />
+      <Btn fullWidth onClick={handleFinish}>
+        終了
+      </Btn>
+      <Btn
+        fullWidth
+        onClick={
+          user?.session?.status === 'running'
+            ? handleStopSession
+            : handleRestartSession
+        }
+      >
+        {user?.session?.status === 'running' ? '一時停止' : '再開'}
+      </Btn>
     </Stack>
   )
 }

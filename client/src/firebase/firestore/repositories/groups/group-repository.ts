@@ -11,14 +11,14 @@ export class GroupRepository extends FirestoreService<GroupRead, GroupWrite> {
   }
 
   protected filterWriteData(data: GroupWrite): GroupWrite {
-    const { name, description, createdAt, memberCount, visibility } = data
-    return { name, description, createdAt, memberCount, visibility }
+    const { name, createdAt, memberCount, visibility } = data
+    return { name, createdAt, memberCount, visibility }
   }
 
   protected filterPartialWriteData(
     data: Partial<GroupWrite>
   ): Partial<GroupWrite> {
-    const { name, description, createdAt, memberCount, visibility } = data
-    return { name, description, createdAt, memberCount, visibility }
+    const { name, createdAt, memberCount, visibility } = data
+    return { name, createdAt, memberCount, visibility }
   }
 }

@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import useCurrentUser from '../../../hooks/useCurrentUser'
 import { UserRepository } from '../../../firebase/firestore/repositories/users/user-repository'
 import { UserSession } from '../../../types/firebase/firestore-documents/users/user-document'
 import {
@@ -7,9 +6,10 @@ import {
   toTimestamp,
 } from '../../../functions/dateTime-utils/time-conversion'
 import useDailyReportService from './useDailyReportService'
+import { useCurrentUserStore } from '../../../stores/currentUserStore'
 
 const useSessionService = () => {
-  const { uid, user } = useCurrentUser()
+  const { uid, user } = useCurrentUserStore()
   const { handleAddStudyTime } = useDailyReportService()
   const session = user?.session || null
   const userRepo = useMemo(() => new UserRepository(), [])

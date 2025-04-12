@@ -2,14 +2,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { VoiceMessageRepository } from '../../../firebase/firestore/repositories/voice-message/voice-message-repository'
 import { storageManager } from '../../../firebase/storage/storageManager'
-import useCurrentUser from '../../../hooks/useCurrentUser'
 import useUserService from '../../../hooks/useUsers'
 import { Voice } from '../../../types/components/voice-types'
 import { VoiceMessageWrite } from '../../../types/firebase/firestore-documents/voice-message/voice-message-document'
 import { Visibility } from '../../../types/firebase/util-document-types'
+import { useCurrentUserStore } from '../../../stores/currentUserStore'
 
 const useVoiceMessages = () => {
-  const { user } = useCurrentUser()
+  const { user } = useCurrentUserStore()
   const { fetchUsersByIds } = useUserService()
 
   const [voices, setVoices] = useState<Voice[]>([])
