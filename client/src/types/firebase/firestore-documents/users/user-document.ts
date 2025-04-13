@@ -18,6 +18,7 @@ export interface UserSession {
   latestStartedAt: Timestamp
   expectedEndAt: Timestamp // ユーザーが設定した予定終了時刻
   stoppedAt: Timestamp | null // 途中で手動停止された場合に記録
+  expectedDuration: number // ユーザーが設定したセッションの長さ
   status: 'running' | 'stopped'
 }
 

@@ -1,17 +1,28 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import TextWithLabel from '../atoms/TextWithLabel'
-import {
-  HOURS_IN_MILLISECOND,
-  MINUTES_IN_MILLISECOND,
-} from '../../constants/datetime-constants'
 import ContainerCard from '../atoms/ContainerCard'
 import { formatDuration } from '../../functions/dateTime-utils/time-format-utils'
+import { useCurrentUserStore } from '../../stores/currentUserStore'
+import useDailyReportService from '../../features/session/hooks/useDailyReportService'
 
 interface TodayStudyPanelProps {}
 
 const TodayStudyPanel: React.FC<TodayStudyPanelProps> = ({}) => {
-  const todayStudy = 3 * HOURS_IN_MILLISECOND + 30 * MINUTES_IN_MILLISECOND // 例: 3時間30分
+  const { user } = useCurrentUserStore()
+  const { getTodayReport } = useDailyReportService()
+  const [todayStudy, setTodayStudy] = React.useState<number>(0)
+
+  useEffect(() => {
+    if (!user) return
+    const fetchTodayReport = async () => {
+      const todayReport = await getTodayReport()
+      setTodayStudy(todayReport?.studyTime || 0)
+    }
+    fetchTodayReport()
+  }, [user])
+
   const ranking = 5 // 例: 5位
+
   return (
     <ContainerCard contentSx={{ flexDirection: 'row' }}>
       <TextWithLabel

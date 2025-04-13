@@ -15,72 +15,101 @@ const useSessionService = () => {
   const userRepo = useMemo(() => new UserRepository(), [])
 
   const updateSession = async (updatedSession: UserSession | null) => {
-    if (uid) {
-      userRepo.update({ session: updatedSession }, uid)
-    }
+    if (!uid) return
+    await userRepo.update({ session: updatedSession }, uid)
   }
 
-  const getNowTimestamp = () => toTimestamp(Date.now())
+  const now = () => Date.now()
+  const nowTimestamp = () => toTimestamp(now())
+
+  const getStudyTime = (session: UserSession) => {
+    return now() - convertToMilliseconds(session.latestStartedAt)
+  }
+
+  const createNewSession = (
+    type: 'study' | 'break',
+    durationMs: number
+  ): UserSession => {
+    const timestamp = nowTimestamp()
+
+    return {
+      type,
+      startedAt: timestamp,
+      latestStartedAt: timestamp,
+      expectedEndAt: toTimestamp(now() + durationMs),
+      stoppedAt: null,
+      expectedDuration: durationMs,
+      status: 'running',
+    }
+  }
 
   const handleStartSession = async (
     type: 'study' | 'break',
     durationMs: number
   ) => {
     if (!uid || session) return
-
-    const now = Date.now()
-    const newSession: UserSession = {
-      type,
-      startedAt: toTimestamp(now),
-      latestStartedAt: toTimestamp(now),
-      expectedEndAt: toTimestamp(now + durationMs),
-      stoppedAt: null,
-      status: 'running',
-    }
-
-    updateSession(newSession)
+    const newSession = createNewSession(type, durationMs)
+    await updateSession(newSession)
   }
 
   const handleStopSession = async () => {
-    if (!session) return
+    if (!session || session.status !== 'running') return
+
+    // 勉強中のみ加算
+    if (session.type === 'study') {
+      await handleAddStudyTime(getStudyTime(session))
+    }
 
     const updatedSession: UserSession = {
       ...session,
-      stoppedAt: getNowTimestamp(),
+      stoppedAt: nowTimestamp(),
       status: 'stopped',
     }
-
-    updateSession(updatedSession)
+    await updateSession(updatedSession)
   }
 
   const handleRestartSession = async () => {
     if (!session?.stoppedAt) return
 
-    const now = Date.now()
-    const stoppedTime = now - convertToMilliseconds(session.stoppedAt)
-    const newExpectedEndAt =
-      convertToMilliseconds(session.expectedEndAt) + stoppedTime
-
-    handleAddStudyTime(now - convertToMilliseconds(session.latestStartedAt))
+    const nowMs = now()
+    const stoppedDuration = nowMs - convertToMilliseconds(session.stoppedAt)
+    const extendedEndAt =
+      convertToMilliseconds(session.expectedEndAt) + stoppedDuration
 
     const updatedSession: UserSession = {
       ...session,
-      latestStartedAt: toTimestamp(now),
-      expectedEndAt: toTimestamp(newExpectedEndAt),
+      latestStartedAt: toTimestamp(nowMs),
+      expectedEndAt: toTimestamp(extendedEndAt),
       stoppedAt: null,
       status: 'running',
     }
 
-    updateSession(updatedSession)
+    await updateSession(updatedSession)
   }
 
   const handleFinishSession = async () => {
     if (!session) return
 
-    handleAddStudyTime(
-      Date.now() - convertToMilliseconds(session.latestStartedAt)
-    )
-    updateSession(null)
+    // 勉強中でかつ running 状態のときのみ記録
+    if (session.type === 'study' && session.status === 'running') {
+      await handleAddStudyTime(getStudyTime(session))
+    }
+
+    await updateSession(null)
+  }
+
+  const handleSwitchSession = async (
+    type: 'study' | 'break',
+    durationMs: number
+  ) => {
+    if (!uid) return
+
+    if (session && session.type === 'study' && session.status === 'running') {
+      await handleAddStudyTime(getStudyTime(session))
+    }
+
+    const newSession = createNewSession(type, durationMs)
+    await updateSession(newSession)
   }
 
   return {
@@ -88,6 +117,7 @@ const useSessionService = () => {
     handleStopSession,
     handleRestartSession,
     handleFinishSession,
+    handleSwitchSession,
   }
 }
 

@@ -4,20 +4,23 @@ import StartButton from '../atoms/StartButton'
 import ContainerCard from '../atoms/ContainerCard'
 import { useNavigate } from 'react-router-dom'
 import useSessionService from '../../features/session/hooks/useSessionService'
-import { MINUTES_IN_MILLISECOND } from '../../constants/datetime-constants'
+import {
+  breakTimeChoices,
+  studyTimeChoices,
+} from '../../constants/session-time-constants'
 
 interface StartPanelProps {}
 
 const startButtonSettings = {
   study: [
-    { timeMin: 10, explanation: 'ウォーミングアップ' },
-    { timeMin: 25, explanation: '短く一気に集中' },
-    { timeMin: 60, explanation: 'じっくり長めに集中' },
+    { timeMs: studyTimeChoices[0], explanation: 'ウォーミングアップ' },
+    { timeMs: studyTimeChoices[1], explanation: '短く一気に集中' },
+    { timeMs: studyTimeChoices[2], explanation: 'じっくり長めに集中' },
   ],
   break: [
-    { timeMin: 1, explanation: 'ちょっと休憩' },
-    { timeMin: 3, explanation: '気分転換' },
-    { timeMin: 5, explanation: 'リフレッシュ' },
+    { timeMs: breakTimeChoices[0], explanation: 'ちょっと休憩' },
+    { timeMs: breakTimeChoices[1], explanation: '気分転換' },
+    { timeMs: breakTimeChoices[2], explanation: 'リフレッシュ' },
   ],
 }
 
@@ -43,12 +46,10 @@ const StartPanel: React.FC<StartPanelProps> = ({}) => {
       />
       {startButtonSettings[mode].map((setting) => (
         <StartButton
-          key={setting.timeMin}
-          timeMin={setting.timeMin}
+          key={setting.timeMs}
+          timeMs={setting.timeMs}
           explanation={setting.explanation}
-          onClick={() =>
-            handleStart(mode, setting.timeMin * MINUTES_IN_MILLISECOND)
-          }
+          onClick={() => handleStart(mode, setting.timeMs)}
         />
       ))}
     </ContainerCard>

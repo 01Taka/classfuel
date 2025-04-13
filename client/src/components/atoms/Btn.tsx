@@ -18,7 +18,7 @@ const Btn: React.FC<BtnProps> = ({
       variant={variant}
       disableElevation
       sx={{
-        boxShadow: 2,
+        boxShadow: variant === 'text' ? 0 : 2,
         textTransform: 'none',
         fontWeight: 600,
         px: 2.5,

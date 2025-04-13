@@ -3,20 +3,22 @@ import React from 'react'
 import Btn from './Btn'
 
 interface StartButtonProps {
-  timeMin: number
+  timeMs: number
   explanation: string
   onClick?: () => void
 }
 
 const StartButton: React.FC<StartButtonProps> = ({
-  timeMin,
+  timeMs,
   explanation,
   onClick,
 }) => {
   return (
     <Btn onClick={onClick} fullWidth>
       <Stack direction="row" spacing={2}>
-        <Typography fontWeight="bold">{timeMin}分</Typography>
+        <Typography fontWeight="bold">
+          {Math.floor(timeMs / 60000)}分
+        </Typography>
         <Typography>{explanation}</Typography>
       </Stack>
     </Btn>
