@@ -10,12 +10,15 @@ import {
   studyTimeChoices,
 } from '../../../constants/session-time-constants'
 import Btn from '../../../components/atoms/Btn'
+import FinishSE from '../../../assets/sounds/timer.mp3'
 
 interface SessionTimerProps {}
 
 const SessionTimer: React.FC<SessionTimerProps> = ({}) => {
   const navigate = useNavigate()
   const { user } = useCurrentUserStore()
+  const session = user?.session ?? null
+
   const {
     handleStopSession,
     handleRestartSession,
@@ -26,36 +29,54 @@ const SessionTimer: React.FC<SessionTimerProps> = ({}) => {
 
   const [nextStudyTime, setNextStudyTime] = useState<number>(25 * 60 * 1000)
 
+  const [hasPlayedSE, setHasPlayedSE] = useState(false)
   const [hasBreakStarted, setHasBreakStarted] = useState(false)
+
+  const playSE = () => {
+    const audio = new Audio(FinishSE)
+    audio.play()
+  }
 
   useEffect(() => {
     // breakに切り替わった瞬間だけで1回だけtrueに
-    if (user?.session?.type === 'break' && !hasBreakStarted) {
+    if (session?.type === 'break' && !hasBreakStarted) {
       setHasBreakStarted(true)
     }
-  }, [user?.session?.type])
+  }, [session?.type])
 
   useEffect(() => {
     // breakが始まってから、残り時間がマイナスになったらstudyに切り替え
     if (hasBreakStarted && remainingTime < 0) {
+      playSE()
       handleSwitchSession('study', nextStudyTime)
+      setHasPlayedSE(false) // reset for next sound effect
       setHasBreakStarted(false) // reset for next break
     }
   }, [hasBreakStarted, remainingTime])
+
   const handleFinish = () => {
+    setHasPlayedSE(false)
+    setHasBreakStarted(false)
     handleFinishSession()
     navigate('/')
   }
+
+  useEffect(() => {
+    if (remainingTime < 0 && session?.type === 'study' && !hasPlayedSE) {
+      playSE()
+      setHasPlayedSE(true)
+    }
+  }, [remainingTime, session?.type])
 
   const handleBreak = (time: number) => {
     handleSwitchSession('break', time)
   }
 
-  const isRunning = user?.session?.status === 'running'
+  const isRunning = session?.status === 'running'
 
   return (
     <div>
-      {user?.session?.type === 'study' ? (
+      {session?.type === 'study' ? (
         <StudyTimer
           remainingTime={remainingTime}
           elapsedTime={elapsedTime}
