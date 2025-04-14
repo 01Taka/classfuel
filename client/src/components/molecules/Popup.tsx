@@ -1,56 +1,69 @@
-import { IconButton, Modal, Stack, SxProps } from "@mui/material";
-import { FC, ReactNode } from "react";
-import CloseIcon from "@mui/icons-material/Close";
+import { IconButton, Modal, Stack, SxProps } from '@mui/material'
+import { FC, ReactNode } from 'react'
+import CloseIcon from '@mui/icons-material/Close'
 
 interface PopupProps {
-  open?: boolean;
-  children: ReactNode;
-  height?: string | number;
-  sx?: SxProps; // Box用のスタイル
-  modalSx?: SxProps; // Modal用のスタイル
-  absoluteCloseButton?: boolean;
-  stackDirection?: "row" | "column";
-  justifyContent?: "flex-start" | "center" | "flex-end" | "space-between" | "space-around" | "space-evenly",
-  alignItems?: "flex-start" | "center" | "flex-end" | "space-between" | "space-around" | "space-evenly",
-  spacing?: number,
-  onClose?: () => void;
+  open?: boolean
+  children: ReactNode
+  height?: string | number
+  sx?: SxProps // Box用のスタイル
+  modalSx?: SxProps // Modal用のスタイル
+  absoluteCloseButton?: boolean
+  stackDirection?: 'row' | 'column'
+  justifyContent?:
+    | 'flex-start'
+    | 'center'
+    | 'flex-end'
+    | 'space-between'
+    | 'space-around'
+    | 'space-evenly'
+  alignItems?:
+    | 'flex-start'
+    | 'center'
+    | 'flex-end'
+    | 'space-between'
+    | 'space-around'
+    | 'space-evenly'
+  spacing?: number
+  onClose?: () => void
 }
 
 const Popup: FC<PopupProps> = ({
   open,
   children,
-  height = "100%",
+  height = '100%',
   sx,
   modalSx,
   absoluteCloseButton = false,
-  stackDirection = "column",
+  stackDirection = 'column',
   justifyContent,
-  alignItems = "center",
+  alignItems = 'center',
   spacing,
   onClose,
 }) => {
   const stackStyles: SxProps = {
-    position: "relative",
-    width: "95%",
-    maxWidth: "lg",
+    position: 'relative',
+    width: '100%',
+    maxWidth: '95vw',
     height,
-    maxHeight: "95vh",
-    overflow: "auto",
+    maxHeight: '95vh',
+    overflow: 'auto',
+    borderRadius: 2,
     ...sx,
-  };
+  }
 
   return (
     <Modal
-      open={open === true || (open === undefined && (!!children || !onClose)) }
+      open={open === true || (open === undefined && (!!children || !onClose))}
       onClose={onClose}
       aria-labelledby="popup-title"
       aria-describedby="popup-description"
       sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        width: "100%",
-        height: "100%",
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        height: '100%',
         ...modalSx,
       }}
     >
@@ -69,8 +82,8 @@ const Popup: FC<PopupProps> = ({
             size="large"
             color="warning"
             sx={{
-              position: absoluteCloseButton ? "absolute" : "fixed",
-              top: 8,
+              position: absoluteCloseButton ? 'absolute' : 'fixed',
+              top: 18,
               right: 8,
             }}
           >
@@ -79,7 +92,7 @@ const Popup: FC<PopupProps> = ({
         )}
       </Stack>
     </Modal>
-  );
-};
+  )
+}
 
-export default Popup;
+export default Popup

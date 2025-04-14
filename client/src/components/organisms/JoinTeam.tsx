@@ -1,9 +1,9 @@
 import { Box, Stack, Typography } from '@mui/material'
 import React from 'react'
 import { QrCode2, Search } from '@mui/icons-material'
-import Popup from './Popup'
+import Popup from '../molecules/Popup'
 import { useQrScanner } from '../../hooks/useQrScanner'
-import CameraPreview from '../organisms/CameraPreview'
+import CameraPreview from './CameraPreview'
 import IconButtonWithLabel from '../atoms/IconButtonWithLabel'
 
 interface JoinTeamProps {
@@ -16,7 +16,7 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ onQrCodeScan, onTeamIdInput }) => {
     useQrScanner(onQrCodeScan)
 
   return (
-    <div>
+    <Box sx={{ padding: 2 }}>
       <Typography variant="h6">自分が参加</Typography>
       <Stack direction="row" spacing={2} mb={2}>
         <IconButtonWithLabel label="QRコード読み取り" onClick={startScanning}>
@@ -35,7 +35,7 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ onQrCodeScan, onTeamIdInput }) => {
           </Typography>
         </Box>
       </Popup>
-    </div>
+    </Box>
   )
 }
 

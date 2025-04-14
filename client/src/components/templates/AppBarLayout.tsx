@@ -1,29 +1,29 @@
-import { AppBar, Toolbar, Box, IconButton } from '@mui/material'
+import { AppBar, Toolbar, Box } from '@mui/material'
 import React from 'react'
 import { TeamDropdownMenu } from '../organisms/TeamDropdownMenu'
 import NotificationsIcon from '@mui/icons-material/Notifications'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
-import { QrCode } from '@mui/icons-material'
-import JoinTeam from '../molecules/JoinTeam'
+import JoinTeam from '../organisms/JoinTeam'
 import Popup from '../molecules/Popup'
-import QrScanner from '../organisms/CameraPreview'
 
 interface AppBarLayoutProps {}
 
+const teams = [
+  { id: '1', name: 'Team A' },
+  { id: '2', name: 'Team B' },
+]
+
 const AppBarLayout: React.FC<AppBarLayoutProps> = ({}) => {
-  const teams = [
-    { id: '1', name: 'Team A' },
-    { id: '2', name: 'Team B' },
-  ]
+  const [openPopupType, setOpenPopupType] = React.useState<
+    'join' | 'create' | null
+  >(null)
+
   const currentTeamId = '1'
   const onChangeTeam = (id: string) => {
     console.log('Change team to:', id)
   }
   const onCreateTeam = () => {
     console.log('Create team')
-  }
-  const onJoinTeam = () => {
-    console.log('Join team')
   }
 
   return (
@@ -35,12 +35,9 @@ const AppBarLayout: React.FC<AppBarLayoutProps> = ({}) => {
             teams={teams}
             currentTeamId={currentTeamId}
             onChangeTeam={onChangeTeam}
-            onCreateTeam={onCreateTeam}
-            onJoinTeam={onJoinTeam}
+            onCreateTeam={() => setOpenPopupType('create')}
+            onJoinTeam={() => setOpenPopupType('join')}
           />
-          <IconButton>
-            <QrCode sx={{ color: 'white' }} />
-          </IconButton>
         </Box>
 
         {/* Right: User actions */}
@@ -49,8 +46,9 @@ const AppBarLayout: React.FC<AppBarLayoutProps> = ({}) => {
           <AccountCircleIcon />
         </Box>
       </Toolbar>
-      <Popup sx={{ bgcolor: 'white' }}>
-        <JoinTeam />
+      <Popup onClose={() => setOpenPopupType(null)} sx={{ bgcolor: 'white' }}>
+        {openPopupType &&
+          (openPopupType === 'join' ? <JoinTeam /> : <Box>Create</Box>)}
       </Popup>
     </AppBar>
   )
