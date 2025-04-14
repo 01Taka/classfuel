@@ -6,7 +6,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import { QrCode } from '@mui/icons-material'
 import JoinTeam from '../molecules/JoinTeam'
 import Popup from '../molecules/Popup'
-import QrScanner from '../organisms/QrScanner'
+import QrScanner from '../organisms/CameraPreview'
 
 interface AppBarLayoutProps {}
 
@@ -51,7 +51,6 @@ const AppBarLayout: React.FC<AppBarLayoutProps> = ({}) => {
       </Toolbar>
       <Popup sx={{ bgcolor: 'white' }}>
         <JoinTeam />
-        <QrScanner onScanned={(result) => console.log(result)} />
       </Popup>
     </AppBar>
   )
