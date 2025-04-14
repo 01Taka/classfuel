@@ -2,7 +2,7 @@ import React from 'react'
 import ContainerCard from '../atoms/ContainerCard'
 import { Box, Stack, Typography } from '@mui/material'
 import { formatTime } from '../../functions/dateTime-utils/time-format-utils'
-import IconWithLabel from '../atoms/IconWithLabel'
+import IconWithLabel from '../atoms/AvaterWithLabel'
 
 interface ActiveUserCardProps {
   iconUrl: string

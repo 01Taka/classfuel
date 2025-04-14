@@ -1,13 +1,13 @@
 import { Avatar, Stack, Typography } from '@mui/material'
 import React from 'react'
 
-interface IconWithLabelProps {
+interface AvatarWithLabelProps {
   src: string
   label: string
   size?: number
 }
 
-const IconWithLabel: React.FC<IconWithLabelProps> = ({
+const AvatarWithLabel: React.FC<AvatarWithLabelProps> = ({
   src,
   label,
   size = 48,
@@ -22,4 +22,4 @@ const IconWithLabel: React.FC<IconWithLabelProps> = ({
   )
 }
 
-export default IconWithLabel
+export default AvatarWithLabel

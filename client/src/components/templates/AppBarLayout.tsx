@@ -4,6 +4,9 @@ import { TeamDropdownMenu } from '../organisms/TeamDropdownMenu'
 import NotificationsIcon from '@mui/icons-material/Notifications'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import { QrCode } from '@mui/icons-material'
+import JoinTeam from '../molecules/JoinTeam'
+import Popup from '../molecules/Popup'
+import QrScanner from '../organisms/QrScanner'
 
 interface AppBarLayoutProps {}
 
@@ -46,6 +49,10 @@ const AppBarLayout: React.FC<AppBarLayoutProps> = ({}) => {
           <AccountCircleIcon />
         </Box>
       </Toolbar>
+      <Popup sx={{ bgcolor: 'white' }}>
+        <JoinTeam />
+        <QrScanner onScanned={(result) => console.log(result)} />
+      </Popup>
     </AppBar>
   )
 }
