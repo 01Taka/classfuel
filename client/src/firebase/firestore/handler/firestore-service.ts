@@ -48,11 +48,9 @@ abstract class FirestoreService<
    * サブクラスで実装してください。
    * @param data 書き込むデータ
    */
-  protected abstract filterWriteData(data: Write): Document
+  protected abstract filterCreateData(data: Write): Document
 
-  protected abstract filterPartialWriteData(
-    data: Partial<Write>
-  ): Partial<Document>
+  protected abstract filterUpdateData(data: Partial<Write>): Partial<Document>
 
   private getUid(): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -82,7 +80,7 @@ abstract class FirestoreService<
   private async organizeWriteData(
     data: Write
   ): Promise<Document & { createdById: string }> {
-    const formatData = this.filterWriteData(data) as Document & {
+    const formatData = this.filterCreateData(data) as Document & {
       createdById: string
     }
     formatData.createdById = await this.getUid()
@@ -97,7 +95,7 @@ abstract class FirestoreService<
   }
 
   private organizePartialWriteData(data: Partial<Write>): Partial<Document> {
-    const formatData = this.filterPartialWriteData(data)
+    const formatData = this.filterUpdateData(data)
     return this.removeUndefined(formatData)
   }
 

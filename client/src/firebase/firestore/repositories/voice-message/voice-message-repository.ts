@@ -14,12 +14,12 @@ export class VoiceMessageRepository extends FirestoreService<
     super(db, ['voiceMessages'])
   }
 
-  protected filterWriteData(data: VoiceMessageWrite): VoiceMessageWrite {
+  protected filterCreateData(data: VoiceMessageWrite): VoiceMessageWrite {
     const { audioPath, visibility, likes } = data
     return { audioPath, visibility, likes }
   }
 
-  protected filterPartialWriteData(
+  protected filterUpdateData(
     data: Partial<VoiceMessageWrite>
   ): Partial<VoiceMessageWrite> {
     const { audioPath, visibility, likes } = data

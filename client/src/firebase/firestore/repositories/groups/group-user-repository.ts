@@ -13,12 +13,12 @@ export class GroupUserRepository extends FirestoreService<
     super(db, ['groups', 'users'])
   }
 
-  protected filterWriteData(data: GroupUserWrite): GroupUserWrite {
+  protected filterCreateData(data: GroupUserWrite): GroupUserWrite {
     const { displayName, iconUrl, status, latestStudyTime, joinedAt } = data
     return { displayName, iconUrl, status, latestStudyTime, joinedAt }
   }
 
-  protected filterPartialWriteData(
+  protected filterUpdateData(
     data: Partial<GroupUserWrite>
   ): Partial<GroupUserWrite> {
     const { displayName, iconUrl, status, latestStudyTime, joinedAt } = data

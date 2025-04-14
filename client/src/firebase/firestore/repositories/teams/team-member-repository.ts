@@ -13,12 +13,12 @@ export class TeamMemberRepository extends FirestoreService<
     super(db, ['teams', 'members'])
   }
 
-  protected filterWriteData(data: TeamMemberWrite): TeamMemberWrite {
+  protected filterCreateData(data: TeamMemberWrite): TeamMemberWrite {
     const { displayName, iconUrl, joinedAt, session, todayStudyTime } = data
     return { displayName, iconUrl, joinedAt, session, todayStudyTime }
   }
 
-  protected filterPartialWriteData(
+  protected filterUpdateData(
     data: Partial<TeamMemberWrite>
   ): Partial<TeamMemberWrite> {
     const { displayName, iconUrl, joinedAt, session, todayStudyTime } = data
