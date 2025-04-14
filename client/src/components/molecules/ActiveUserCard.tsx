@@ -2,7 +2,7 @@ import React from 'react'
 import ContainerCard from '../atoms/ContainerCard'
 import { Box, Stack, Typography } from '@mui/material'
 import { formatTime } from '../../functions/dateTime-utils/time-format-utils'
-import AvatarWithName from '../atoms/AvatarWithName'
+import IconWithLabel from '../atoms/IconWithLabel'
 
 interface ActiveUserCardProps {
   iconUrl: string
@@ -23,7 +23,7 @@ const ActiveUserCard: React.FC<ActiveUserCardProps> = ({
 }) => {
   return (
     <ContainerCard>
-      <AvatarWithName src={iconUrl} userName={userName} />
+      <IconWithLabel src={iconUrl} label={userName} />
       <Stack spacing={0.5} flexGrow={1}>
         <Typography variant="body2" color="text.secondary">
           {stateLabel}
