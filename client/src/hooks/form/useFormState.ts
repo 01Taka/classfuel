@@ -1,4 +1,4 @@
-import { useState, useCallback, ChangeEvent } from 'react'
+import { useState, useCallback, ChangeEvent, useMemo } from 'react'
 import { SelectChangeEvent } from '@mui/material'
 import {
   FormStateChangeAction,
@@ -151,10 +151,17 @@ const useFormState = <
     }
   }
 
+  const hasEmptyInput = useMemo(() => {
+    return Object.values(formState).some(
+      (value) => value === undefined || value === ''
+    )
+  }, [formState])
+
   return {
     formState,
     names,
     files,
+    hasEmptyInput,
     setFormState,
     onChangeFormState,
     onChangeArrayField,

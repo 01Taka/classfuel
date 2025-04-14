@@ -5,6 +5,7 @@ import NotificationsIcon from '@mui/icons-material/Notifications'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import JoinTeam from '../organisms/JoinTeam'
 import Popup from '../molecules/Popup'
+import CreateTeam from '../organisms/CreateTeam'
 
 interface AppBarLayoutProps {}
 
@@ -48,7 +49,11 @@ const AppBarLayout: React.FC<AppBarLayoutProps> = ({}) => {
       </Toolbar>
       <Popup onClose={() => setOpenPopupType(null)} sx={{ bgcolor: 'white' }}>
         {openPopupType &&
-          (openPopupType === 'join' ? <JoinTeam /> : <Box>Create</Box>)}
+          (openPopupType === 'join' ? (
+            <JoinTeam />
+          ) : (
+            <CreateTeam onSuccess={() => setOpenPopupType(null)} />
+          ))}
       </Popup>
     </AppBar>
   )

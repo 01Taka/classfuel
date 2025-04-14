@@ -14,14 +14,14 @@ export class TeamMemberRepository extends FirestoreService<
   }
 
   protected filterCreateData(data: TeamMemberWrite): TeamMemberWrite {
-    const { displayName, iconUrl, joinedAt, session, todayStudyTime } = data
-    return { displayName, iconUrl, joinedAt, session, todayStudyTime }
+    const { displayName, iconUrl, session, todayStudyTime } = data
+    return { displayName, iconUrl, session, todayStudyTime }
   }
 
   protected filterUpdateData(
     data: Partial<TeamMemberWrite>
   ): Partial<TeamMemberWrite> {
-    const { displayName, iconUrl, joinedAt, session, todayStudyTime } = data
-    return { displayName, iconUrl, joinedAt, session, todayStudyTime }
+    const { displayName, iconUrl, session, todayStudyTime } = data
+    return { displayName, iconUrl, session, todayStudyTime }
   }
 }

@@ -1,31 +1,22 @@
 import FirestoreService from '../../handler/firestore-service'
 import { db } from '../../../firebase'
 import {
-  TeamDocument,
   TeamRead,
   TeamWrite,
 } from '../../../../types/firebase/firestore-documents/teams/team-document'
-import { increment } from 'firebase/firestore'
 
-export class TeamRepository extends FirestoreService<
-  TeamRead,
-  TeamWrite,
-  TeamDocument
-> {
+export class TeamRepository extends FirestoreService<TeamRead, TeamWrite> {
   constructor() {
     super(db, ['teams'])
   }
 
-  protected filterCreateData(data: TeamWrite): TeamDocument {
+  protected filterCreateData(data: TeamWrite): TeamWrite {
     const { name } = data
-    return { name, memberCount: 0 }
+    return { name }
   }
 
-  protected filterUpdateData(data: Partial<TeamWrite>): Partial<TeamDocument> {
-    const { name, isIncrementMemberCount } = data
-    return {
-      name,
-      memberCount: isIncrementMemberCount ? increment(1) : undefined,
-    }
+  protected filterUpdateData(data: Partial<TeamWrite>): Partial<TeamWrite> {
+    const { name } = data
+    return { name }
   }
 }
