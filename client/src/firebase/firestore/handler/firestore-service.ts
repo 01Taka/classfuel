@@ -8,6 +8,10 @@ import {
   QuerySnapshot,
   DocumentReference,
   Unsubscribe,
+  WriteBatch,
+  FieldValue,
+  serverTimestamp,
+  SetOptions,
 } from 'firebase/firestore'
 import BatchHandler from './batch-handler'
 import TransactionHandler from './transaction-handler'
@@ -28,12 +32,10 @@ abstract class FirestoreService<
   Document extends BaseDocument = Write,
 > {
   private _callbacksHandler?: CallbacksHandler<Read>
-  private _batchHandler?: BatchHandler<Document>
-  private _transactionHandler?: TransactionHandler<Read, Document>
   private _collectionManager: CollectionManager
 
   constructor(
-    private firestore: Firestore,
+    firestore: Firestore,
     private collectionPathComposition: string | string[]
   ) {
     this._collectionManager = new CollectionManager(firestore)
@@ -77,7 +79,24 @@ abstract class FirestoreService<
     }
   }
 
-  private async organizeWriteData(
+  /**
+   * 作成前の前処理を行う
+   * @param data 作成するデータ
+   * @param options オプション（setInvalid なら isActive を false に）
+   * @returns 前処理後のデータ（createdAt と isActive を付与）
+   */
+  private addSystemFields<Write>(
+    data: Write
+  ): Write & { createdAt: FieldValue; isActive: boolean } {
+    return {
+      ...data,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      isActive: true,
+    }
+  }
+
+  private async organizeCreateData(
     data: Write
   ): Promise<Document & { createdById: string }> {
     const formatData = this.filterCreateData(data) as Document & {
@@ -85,7 +104,7 @@ abstract class FirestoreService<
     }
     formatData.createdById = await this.getUid()
     this.checkRequiredProperties(formatData)
-    return formatData
+    return this.addSystemFields(formatData)
   }
 
   private removeUndefined<T extends Record<string, any>>(obj: T): Partial<T> {
@@ -94,9 +113,10 @@ abstract class FirestoreService<
     ) as Partial<T>
   }
 
-  private organizePartialWriteData(data: Partial<Write>): Partial<Document> {
-    const formatData = this.filterUpdateData(data)
-    return this.removeUndefined(formatData)
+  private organizeUpdateData(data: Partial<Write>): Partial<Document> {
+    const filterData = this.filterUpdateData(data)
+    const formatData = this.removeUndefined(filterData)
+    return { ...formatData, updatedAt: serverTimestamp() }
   }
 
   // ======================================================================
@@ -128,22 +148,6 @@ abstract class FirestoreService<
     return this._callbacksHandler
   }
 
-  private get batchHandler(): BatchHandler<Document> {
-    if (!this._batchHandler) {
-      this._batchHandler = new BatchHandler<Document>(this.firestore)
-    }
-    return this._batchHandler
-  }
-
-  private get transactionHandler(): TransactionHandler<Read, Document> {
-    if (!this._transactionHandler) {
-      this._transactionHandler = new TransactionHandler<Read, Document>(
-        this.firestore
-      )
-    }
-    return this._transactionHandler
-  }
-
   // ======================================================================
   // CRUD Methods
   // ======================================================================
@@ -156,7 +160,7 @@ abstract class FirestoreService<
     const collectionRef = this.getCollectionRef(parentDocumentIds)
     return CRUDHandler.create<Document>(
       collectionRef,
-      await this.organizeWriteData(data)
+      await this.organizeCreateData(data)
     )
   }
 
@@ -164,15 +168,15 @@ abstract class FirestoreService<
     data: Write,
     documentId: string,
     parentDocumentIds: string[] = [],
-    merge: boolean = false
+    options?: SetOptions
   ): Promise<void> {
     console.log('called createWithId')
     const collectionRef = this.getCollectionRef(parentDocumentIds)
-    return CRUDHandler.createWithId<Document>(
+    return CRUDHandler.createWithId(
       collectionRef,
       documentId,
-      await this.organizeWriteData(data),
-      merge
+      await this.organizeCreateData(data),
+      options
     )
   }
 
@@ -202,10 +206,10 @@ abstract class FirestoreService<
   ): Promise<void> {
     console.log('called update')
     const collectionRef = this.getCollectionRef(parentDocumentIds)
-    return CRUDHandler.update<Document>(
+    return CRUDHandler.update(
       collectionRef,
       documentId,
-      this.organizePartialWriteData(data)
+      this.organizeUpdateData(data)
     )
   }
 
@@ -215,7 +219,7 @@ abstract class FirestoreService<
   ): Promise<void> {
     console.log('called hard delete')
     const collectionRef = this.getCollectionRef(parentDocumentIds)
-    return CRUDHandler.hardDelete(collectionRef, documentId)
+    return CRUDHandler.delete(collectionRef, documentId)
   }
 
   async softDelete(
@@ -225,10 +229,15 @@ abstract class FirestoreService<
   ): Promise<void> {
     console.log('called soft delete')
     const collectionRef = this.getCollectionRef(parentDocumentIds)
-    return CRUDHandler.softDelete<Document>(
+    const data = {
+      isActive: false,
+      deletedAt: serverTimestamp(),
+      ...updateFields,
+    }
+    return CRUDHandler.update(
       collectionRef,
       documentId,
-      this.organizePartialWriteData(updateFields)
+      this.organizeUpdateData(data)
     )
   }
 
@@ -366,29 +375,35 @@ abstract class FirestoreService<
   // BatchHandler Methods
   // ======================================================================
 
-  startBatch(parentDocumentIds: string[] = []): void {
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
-    this.batchHandler.startBatch(collectionRef)
+  private batch: WriteBatch | null = null
+
+  setBatch(batch: WriteBatch) {
+    this.batch = batch
   }
 
-  cancelBatch(parentDocumentIds: string[] = []): void {
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
-    this.batchHandler.cancelBatch(collectionRef)
+  clearBatch() {
+    this.batch = null
   }
 
-  async commitBatch(parentDocumentIds: string[] = []): Promise<void> {
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
-    await this.batchHandler.commitBatch(collectionRef)
+  private getBatch(methodName: string): WriteBatch {
+    if (!this.batch) {
+      throw new Error(
+        `No active batch. Call setBatch() before using ${methodName}.`
+      )
+    }
+    return this.batch
   }
 
   async setInBatch(
     data: Write,
     documentId: string | null,
-    parentDocumentIds: string[] = []
+    parentDocumentIds: string[] = [],
+    batch = this.getBatch('setInBatch()')
   ): Promise<void> {
     const collectionRef = this.getCollectionRef(parentDocumentIds)
-    this.batchHandler.set(
-      await this.organizeWriteData(data),
+    BatchHandler.set(
+      batch,
+      await this.organizeCreateData(data),
       collectionRef,
       documentId
     )
@@ -397,92 +412,87 @@ abstract class FirestoreService<
   updateInBatch(
     data: Partial<Write>,
     documentId: string,
-    parentDocumentIds: string[] = []
+    parentDocumentIds: string[] = [],
+    batch = this.getBatch('updateInBatch()')
   ): void {
     const collectionRef = this.getCollectionRef(parentDocumentIds)
-    this.batchHandler.update(
-      this.organizePartialWriteData(data),
+    BatchHandler.update(
+      batch,
+      this.organizeUpdateData(data),
       collectionRef,
       documentId
     )
   }
 
-  deleteInBatch(documentId: string, parentDocumentIds: string[] = []): void {
+  deleteInBatch(
+    documentId: string,
+    parentDocumentIds: string[] = [],
+    batch = this.getBatch('deleteInBatch()')
+  ): void {
     const collectionRef = this.getCollectionRef(parentDocumentIds)
-    this.batchHandler.delete(collectionRef, documentId)
+    BatchHandler.delete(batch, collectionRef, documentId)
   }
 
   // ======================================================================
   // TransactionHandler Methods
   // ======================================================================
 
-  async runTransaction(
-    transactionCallback: (transaction: Transaction) => Promise<void>,
-    parentDocumentIds: string[] = []
-  ): Promise<void> {
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
-    await this.transactionHandler.runTransaction(
-      collectionRef,
-      transactionCallback
-    )
+  protected transaction: Transaction | null = null
+
+  setTransaction(transaction: Transaction): void {
+    this.transaction = transaction
   }
 
-  async getInTransaction(
-    documentId: string,
-    parentDocumentIds: string[] = []
-  ): Promise<DocumentSnapshot<Read>> {
-    const collectionRef = this.getCollectionRef(
-      parentDocumentIds
-    ) as CollectionReference<Read>
-    return this.transactionHandler.get(collectionRef, documentId)
+  clearTransaction(): void {
+    this.transaction = null
   }
 
-  async readInTransaction(
-    documentId: string,
-    parentDocumentIds: string[] = []
-  ): Promise<Read | null> {
-    const snapshot = await this.getInTransaction(documentId, parentDocumentIds)
-    return parseDocumentSnapshot<Read>(snapshot)
+  private getTransaction(methodName: string): Transaction {
+    if (!this.transaction) {
+      throw new Error(
+        `No active transaction. Call setTransaction() before using ${methodName}.`
+      )
+    }
+    return this.transaction
   }
 
   async setInTransaction(
     data: Write,
-    documentId: string,
-    parentDocumentIds: string[] = []
+    documentId: string | null,
+    parentDocumentIds: string[] = [],
+    transaction = this.getTransaction('setInTransaction()')
   ): Promise<void> {
-    const collectionRef = this.getCollectionRef(
-      parentDocumentIds
-    ) as CollectionReference
-    this.transactionHandler.set(
+    const collectionRef = this.getCollectionRef(parentDocumentIds)
+    TransactionHandler.set(
+      transaction,
+      await this.organizeCreateData(data),
       collectionRef,
-      documentId,
-      await this.organizeWriteData(data)
+      documentId
     )
   }
 
   updateInTransaction(
     data: Partial<Write>,
     documentId: string,
-    parentDocumentIds: string[] = []
+    parentDocumentIds: string[] = [],
+    transaction = this.getTransaction('updateInTransaction()')
   ): void {
-    const collectionRef = this.getCollectionRef(
-      parentDocumentIds
-    ) as CollectionReference
-    this.transactionHandler.update(
+    const collectionRef = this.getCollectionRef(parentDocumentIds)
+    TransactionHandler.update(
+      transaction,
+      this.organizeUpdateData(data),
       collectionRef,
-      documentId,
-      this.organizePartialWriteData(data)
+      documentId
     )
   }
 
   deleteInTransaction(
     documentId: string,
-    parentDocumentIds: string[] = []
+    parentDocumentIds: string[] = [],
+    transaction = this.getTransaction('deleteInTransaction()')
   ): void {
-    const collectionRef = this.getCollectionRef(
-      parentDocumentIds
-    ) as CollectionReference
-    this.transactionHandler.delete(collectionRef, documentId)
+    const collectionRef = this.getCollectionRef(parentDocumentIds)
+    TransactionHandler.delete(transaction, collectionRef, documentId)
   }
 }
 

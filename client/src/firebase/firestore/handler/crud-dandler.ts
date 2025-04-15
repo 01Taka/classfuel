@@ -15,15 +15,13 @@ import {
   limit,
   startAfter,
   orderBy,
-  serverTimestamp,
-  FieldValue,
   QueryConstraint,
+  SetOptions,
 } from 'firebase/firestore'
 import { parseDocumentSnapshot, parseQuerySnapshot } from '../snapshotUtils'
 import {
   BaseDocument,
   BaseDocumentRead,
-  SoftDeleteAdditionalField,
 } from '../../../types/firebase/firestore-document-types'
 
 export class CRUDHandler {
@@ -47,27 +45,6 @@ export class CRUDHandler {
   }
 
   /**
-   * 作成前の前処理を行う
-   * @param data 作成するデータ
-   * @param options オプション（setInvalid なら isActive を false に）
-   * @returns 前処理後のデータ（createdAt と isActive を付与）
-   */
-  private static writePreprocessing<Write>(
-    data: Write,
-    options: {
-      setInvalid?: boolean
-      additionalFields?: Record<string, any>
-    } = {}
-  ): Write & { createdAt: FieldValue; isActive: boolean } {
-    return {
-      ...data,
-      createdAt: serverTimestamp(),
-      isActive: !options.setInvalid,
-      ...options.additionalFields,
-    }
-  }
-
-  /**
    * ドキュメントを作成する
    * @param collectionRef 書き込み対象の CollectionReference
    * @param data 作成するドキュメントのデータ
@@ -77,9 +54,8 @@ export class CRUDHandler {
     collectionRef: CollectionReference,
     data: Write
   ): Promise<DocumentReference<Write>> {
-    const processedData = this.writePreprocessing(data)
     const result = await this.handleFirestoreOperation(
-      addDoc(collectionRef, processedData),
+      addDoc(collectionRef, data),
       'Failed to create document'
     )
     return result as DocumentReference<Write>
@@ -92,15 +68,15 @@ export class CRUDHandler {
    * @param data 作成するドキュメントのデータ
    * @param merge 既存ドキュメントへのマージフラグ（デフォルト false）
    */
-  public static async createWithId<Write extends BaseDocument>(
+  public static async createWithId(
     collectionRef: CollectionReference,
     documentId: string,
-    data: Write,
-    merge: boolean = false
+    data: BaseDocument,
+    options: SetOptions = {}
   ): Promise<void> {
     const docRef = doc(collectionRef, documentId)
     await this.handleFirestoreOperation(
-      setDoc(docRef, this.writePreprocessing(data), { merge }),
+      setDoc(docRef, data, options),
       'Failed to create document with ID',
       documentId
     )
@@ -145,14 +121,14 @@ export class CRUDHandler {
    * @param documentId 更新するドキュメントのID
    * @param data 更新する部分的なデータ
    */
-  public static async update<Write extends BaseDocument>(
+  public static async update(
     collectionRef: CollectionReference,
     documentId: string,
-    data: Partial<Write>
+    data: BaseDocument
   ): Promise<void> {
     const docRef = doc(collectionRef, documentId)
     await this.handleFirestoreOperation(
-      updateDoc(docRef, { ...data, updatedAt: serverTimestamp() }),
+      updateDoc(docRef, data),
       'Failed to update document',
       documentId
     )
@@ -163,7 +139,7 @@ export class CRUDHandler {
    * @param collectionRef 対象の CollectionReference
    * @param documentId 削除するドキュメントのID
    */
-  public static async hardDelete(
+  public static async delete(
     collectionRef: CollectionReference,
     documentId: string
   ): Promise<void> {
@@ -173,24 +149,6 @@ export class CRUDHandler {
       'Failed to hard delete document',
       documentId
     )
-  }
-
-  /**
-   * ドキュメントを論理削除する（isActive を false に設定）
-   * @param collectionRef 対象の CollectionReference
-   * @param documentId 削除するドキュメントのID
-   * @param updateFields オプションで追加の更新フィールドを指定
-   */
-  public static async softDelete<Write extends BaseDocument>(
-    collectionRef: CollectionReference,
-    documentId: string,
-    updateFields?: Partial<Write>
-  ): Promise<void> {
-    await this.update(collectionRef, documentId, {
-      ...updateFields,
-      isActive: false,
-      deletedAt: serverTimestamp(),
-    } as Partial<Write & SoftDeleteAdditionalField>)
   }
 
   /**

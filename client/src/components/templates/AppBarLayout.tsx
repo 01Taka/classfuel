@@ -23,9 +23,6 @@ const AppBarLayout: React.FC<AppBarLayoutProps> = ({}) => {
   const onChangeTeam = (id: string) => {
     console.log('Change team to:', id)
   }
-  const onCreateTeam = () => {
-    console.log('Create team')
-  }
 
   return (
     <AppBar sx={{ position: 'fixed', top: 0, left: 0, right: 0 }}>

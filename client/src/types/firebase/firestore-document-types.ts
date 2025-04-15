@@ -9,7 +9,7 @@ export interface BaseDocumentRead extends DocumentData {
   createdById: string // 作成者のUserId
   docId: string // ドキュメントId
   createdAt: number // 作成日時
-  updatedAt?: number // 更新日時
+  updatedAt: number // 更新日時
   deletedAt?: number // 削除日時
   isActive: boolean // 論理的削除の状態
 }
