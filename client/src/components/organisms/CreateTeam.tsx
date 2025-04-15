@@ -9,6 +9,9 @@ import { UserRead } from '../../types/firebase/firestore-documents/users/user-do
 import { TeamMemberRepository } from '../../firebase/firestore/repositories/teams/team-member-repository'
 import { useCurrentUserStore } from '../../stores/currentUserStore'
 import useDailyReportService from '../../features/session/hooks/useDailyReportService'
+import TransactionManager from '../../firebase/firestore/handler/transaction-manager'
+import { db } from '../../firebase/firebase'
+import { arrayUnion } from 'firebase/firestore'
 
 interface CreateTeamProps {
   onSuccess?: () => void
@@ -28,22 +31,30 @@ const handleCreateTeam = async (
   teamName: string
 ) => {
   try {
-    // チーム作成
-    const result = await teamRepo.create({
-      name: teamName,
-      isIncrementMemberCount: true,
-    })
-
-    // ユーザーの参加チームIDを更新
-    await userRepo.addParticipatingTeamIds(user.docId, result.id)
-
-    // チームメンバー登録
+    const transactionManager = new TransactionManager(db)
     const todayStudyTime = await getTodayStudyTime()
-    await teamMemberRepo.createWithId(
-      { ...user, iconUrl: '', todayStudyTime },
-      user.docId,
-      [result.id]
-    )
+
+    await transactionManager.runInTransaction(async () => {
+      const teamRef = teamRepo.getDocumentRefWithAutoId()
+      teamRepo.setInTransaction(
+        {
+          name: teamName,
+          isIncrementMemberCount: true,
+        },
+        teamRef.id
+      )
+
+      userRepo.updateInTransaction(
+        { participatingTeamIds: arrayUnion(teamRef.id) },
+        user.docId
+      )
+
+      teamMemberRepo.setInTransaction(
+        { ...user, iconUrl: '', todayStudyTime },
+        user.docId,
+        [teamRef.id]
+      )
+    }, [teamRepo, userRepo, teamMemberRepo])
   } catch (error) {
     console.error('handleCreateTeam にてエラー:', error)
     throw new Error('チーム作成中にエラーが発生しました')

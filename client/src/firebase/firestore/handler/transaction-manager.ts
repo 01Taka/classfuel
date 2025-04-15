@@ -42,6 +42,9 @@ class TransactionManager {
       this.setTransactionToRepositories(transaction, repositories)
       try {
         await callback(transaction)
+      } catch (error) {
+        console.error('Transaction failed during callback execution:', error)
+        throw error
       } finally {
         this.clearRepositoriesTransaction(repositories)
       }

@@ -4,7 +4,6 @@ import {
   UserWrite,
 } from '../../../../types/firebase/firestore-documents/users/user-document'
 import { db } from '../../../firebase'
-import { arrayUnion } from 'firebase/firestore'
 
 export class UserRepository extends FirestoreService<UserRead, UserWrite> {
   constructor() {
@@ -47,9 +46,5 @@ export class UserRepository extends FirestoreService<UserRead, UserWrite> {
       session,
       participatingTeamIds,
     }
-  }
-
-  async addParticipatingTeamIds(userId: string, teamId: string) {
-    this.update({ participatingTeamIds: arrayUnion(teamId) }, userId)
   }
 }

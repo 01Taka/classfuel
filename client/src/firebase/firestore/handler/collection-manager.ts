@@ -13,13 +13,6 @@ class CollectionManager {
   constructor(private firestore: Firestore) {}
 
   /**
-   * 文字列または文字列配列を必ず文字列配列に変換する
-   */
-  private normalizeToArray(input: string | string[]): string[] {
-    return Array.isArray(input) ? input : [input]
-  }
-
-  /**
    * キャッシュに存在すれば返し、なければ新たに作成してキャッシュする
    */
   private getOrCreateCollection(
@@ -39,7 +32,9 @@ class CollectionManager {
     collectionPath: string | string[],
     documentIds: string[] = []
   ): CollectionReference<DocumentData> {
-    const collections = this.normalizeToArray(collectionPath)
+    const collections = Array.isArray(collectionPath)
+      ? collectionPath
+      : [collectionPath]
     const composedPath = CollectionManager.composeCollectionPath(
       collections,
       documentIds
