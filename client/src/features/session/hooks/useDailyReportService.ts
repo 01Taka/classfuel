@@ -1,11 +1,14 @@
-import { useMemo } from 'react'
 import { DailyReportRepository } from '../../../firebase/firestore/repositories/users/user-daily-report-repository'
 import { toISODate } from '../../../functions/dateTime-utils/time-conversion'
 import { useCurrentUserStore } from '../../../stores/currentUserStore'
+import userTeamMemberService from './useTeamMemberService'
+
+const dailyReportRepo = new DailyReportRepository()
 
 const useDailyReportService = () => {
   const { uid } = useCurrentUserStore()
-  const dailyReportRepo = useMemo(() => new DailyReportRepository(), [])
+  const { updateTodayStudyTime: updateTodayStudyTimeAtMember } =
+    userTeamMemberService()
   const today = toISODate(Date.now())
 
   const getTodayReport = async () => {
@@ -22,20 +25,23 @@ const useDailyReportService = () => {
     if (!uid) return
     const todayReport = await getTodayReport()
 
-    console.log('todayReport', todayReport)
+    const todayStudyTime = todayReport
+      ? todayReport.studyTime + studyTime
+      : studyTime
 
     if (!todayReport) {
-      console.log("'create new report'")
-
-      await dailyReportRepo.create({ date: today, studyTime }, [uid])
+      await dailyReportRepo.create({ date: today, studyTime: todayStudyTime }, [
+        uid,
+      ])
     } else {
-      console.log('todayReport.studyTime', todayReport.studyTime)
-
       await dailyReportRepo.update(
-        { studyTime: todayReport.studyTime + studyTime },
+        { studyTime: todayStudyTime },
         todayReport.docId,
         [uid]
       )
+    }
+    if (todayStudyTime) {
+      await updateTodayStudyTimeAtMember(todayStudyTime)
     }
   }
 

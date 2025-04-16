@@ -1,27 +1,45 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import TextWithLabel from '../atoms/TextWithLabel'
 import ContainerCard from '../atoms/ContainerCard'
 import { formatDuration } from '../../functions/dateTime-utils/time-format-utils'
 import { useCurrentUserStore } from '../../stores/currentUserStore'
 import useDailyReportService from '../../features/session/hooks/useDailyReportService'
+import { TeamMemberRepository } from '../../firebase/firestore/repositories/teams/team-member-repository'
 
 interface TodayStudyPanelProps {}
+
+const teamMemberRepo = new TeamMemberRepository()
+
+const getRanking = async (
+  teamId: string,
+  studyTime: number
+): Promise<number> => {
+  const members = await teamMemberRepo.getAll([teamId])
+  const todayStudyTimes = members.map((member) => member.todayStudyTime)
+  return todayStudyTimes.indexOf(studyTime) ?? 0
+}
 
 const TodayStudyPanel: React.FC<TodayStudyPanelProps> = ({}) => {
   const { user } = useCurrentUserStore()
   const { getTodayReport } = useDailyReportService()
-  const [todayStudy, setTodayStudy] = React.useState<number>(0)
+  const [todayStudy, setTodayStudy] = useState<number>(0)
+  const [ranking, setRanking] = useState<number>(0)
 
   useEffect(() => {
     if (!user) return
     const fetchTodayReport = async () => {
       const todayReport = await getTodayReport()
-      setTodayStudy(todayReport?.studyTime || 0)
+      const todayStudyTime = todayReport?.studyTime || 0
+      setTodayStudy(todayStudyTime)
+
+      if (user.activeTeamId) {
+        const ranking = await getRanking(user.activeTeamId, todayStudyTime)
+        setRanking(ranking)
+      }
     }
+
     fetchTodayReport()
   }, [user])
-
-  const ranking = 5 // 例: 5位
 
   return (
     <ContainerCard contentSx={{ flexDirection: 'row' }}>

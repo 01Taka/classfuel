@@ -4,14 +4,13 @@ import { Stack, TextField } from '@mui/material'
 import Btn from '../../atoms/Btn'
 import { TeamRepository } from '../../../firebase/firestore/repositories/teams/team-repository'
 import useAsyncHandler from '../../../hooks/async-processing/useAsyncHandler'
-import { UserRepository } from '../../../firebase/firestore/repositories/users/user-repository'
 import { UserRead } from '../../../types/firebase/firestore-documents/users/user-document'
 import { TeamMemberRepository } from '../../../firebase/firestore/repositories/teams/team-member-repository'
 import { useCurrentUserStore } from '../../../stores/currentUserStore'
 import useDailyReportService from '../../../features/session/hooks/useDailyReportService'
 import TransactionManager from '../../../firebase/firestore/handler/transaction-manager'
 import { db } from '../../../firebase/firebase'
-import { arrayUnion } from 'firebase/firestore'
+import { UserJoinedTeamRepository } from '../../../firebase/firestore/repositories/users/user-joined-team-repository'
 
 interface CreateTeamProps {
   onSuccess?: () => void
@@ -21,7 +20,7 @@ interface FormState {
   name: string
 }
 
-const userRepo = new UserRepository()
+const userJoinedTeamRepo = new UserJoinedTeamRepository()
 const teamRepo = new TeamRepository()
 const teamMemberRepo = new TeamMemberRepository()
 
@@ -44,17 +43,16 @@ const handleCreateTeam = async (
         teamRef.id
       )
 
-      userRepo.updateInTransaction(
-        { participatingTeamIds: arrayUnion(teamRef.id) },
-        user.docId
-      )
+      userJoinedTeamRepo.setInTransaction({ name: teamName }, teamRef.id, [
+        user.docId,
+      ])
 
       teamMemberRepo.setInTransaction(
         { ...user, iconUrl: '', todayStudyTime },
         user.docId,
         [teamRef.id]
       )
-    }, [teamRepo, userRepo, teamMemberRepo])
+    }, [teamRepo, userJoinedTeamRepo, teamMemberRepo])
   } catch (error) {
     console.error('handleCreateTeam にてエラー:', error)
     throw new Error('チーム作成中にエラーが発生しました')

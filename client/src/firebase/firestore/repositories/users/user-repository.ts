@@ -13,21 +13,15 @@ export class UserRepository extends FirestoreService<UserRead, UserWrite> {
   protected filterWriteData<T extends UserWrite | Partial<UserWrite>>(
     data: T
   ): T extends UserWrite ? UserWrite : Partial<UserWrite> {
-    const {
-      displayName,
-      birthdate,
-      gender,
-      friendIds,
-      session,
-      participatingTeamIds,
-    } = data
+    const { displayName, birthdate, gender, friendIds, session, activeTeamId } =
+      data
     return {
       displayName,
       birthdate,
       gender,
       friendIds,
       session,
-      participatingTeamIds,
+      activeTeamId,
     } as any
   }
 }

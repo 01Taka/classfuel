@@ -22,7 +22,7 @@ class BatchManager {
   }
 
   async runInBatch(
-    callback: () => Promise<void>,
+    callback: () => void | Promise<void>,
     repositories: FirestoreService<any, any>[]
   ): Promise<void> {
     const batch = this.startBatch()

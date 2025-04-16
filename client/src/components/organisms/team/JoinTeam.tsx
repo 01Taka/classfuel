@@ -1,10 +1,10 @@
 import { Box, Stack, Typography } from '@mui/material'
 import React from 'react'
 import { QrCode2, Search } from '@mui/icons-material'
-import Popup from '../molecules/Popup'
-import { useQrScanner } from '../../hooks/useQrScanner'
-import CameraPreview from './CameraPreview'
-import IconButtonWithLabel from '../atoms/IconButtonWithLabel'
+import { useQrScanner } from '../../../hooks/useQrScanner'
+import IconButtonWithLabel from '../../atoms/IconButtonWithLabel'
+import Popup from '../../molecules/Popup'
+import CameraPreview from '../CameraPreview'
 
 interface JoinTeamProps {
   onQrCodeScan?: () => void

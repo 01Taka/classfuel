@@ -1,27 +1,40 @@
 import { AppBar, Toolbar, Box } from '@mui/material'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { TeamDropdownMenu } from '../organisms/team/TeamDropdownMenu'
 import NotificationsIcon from '@mui/icons-material/Notifications'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import JoinTeam from '../organisms/team/JoinTeam'
 import Popup from '../molecules/Popup'
 import CreateTeam from '../organisms/team/CreateTeam'
+import { UserJoinedTeamRepository } from '../../firebase/firestore/repositories/users/user-joined-team-repository'
+import { UserJoinedTeamRead } from '../../types/firebase/firestore-documents/users/user-joined-team-document'
+import { useCurrentUserStore } from '../../stores/currentUserStore'
+import { UserRepository } from '../../firebase/firestore/repositories/users/user-repository'
 
 interface AppBarLayoutProps {}
 
-const teams = [
-  { id: '1', name: 'Team A' },
-  { id: '2', name: 'Team B' },
-]
+const userRepo = new UserRepository()
+const userJoinedTeamRepo = new UserJoinedTeamRepository()
 
 const AppBarLayout: React.FC<AppBarLayoutProps> = ({}) => {
+  const { uid, user } = useCurrentUserStore()
   const [openPopupType, setOpenPopupType] = React.useState<
     'join' | 'create' | null
   >(null)
+  const [teams, setTeams] = useState<UserJoinedTeamRead[] | null>(null)
 
-  const currentTeamId = '1'
-  const onChangeTeam = (id: string) => {
-    console.log('Change team to:', id)
+  useEffect(() => {
+    const fetchTeams = async () => {
+      if (!uid) return
+      const teams = await userJoinedTeamRepo.getAll([uid])
+      setTeams(teams)
+    }
+    fetchTeams()
+  }, [uid])
+
+  const onChangeTeam = async (id: string) => {
+    if (!uid) return
+    userRepo.update({ activeTeamId: id }, uid)
   }
 
   return (
@@ -30,8 +43,8 @@ const AppBarLayout: React.FC<AppBarLayoutProps> = ({}) => {
         {/* Left: Team selector */}
         <Box>
           <TeamDropdownMenu
-            teams={teams}
-            currentTeamId={currentTeamId}
+            teams={teams ?? []}
+            currentTeamId={user?.activeTeamId ?? null}
             onChangeTeam={onChangeTeam}
             onCreateTeam={() => setOpenPopupType('create')}
             onJoinTeam={() => setOpenPopupType('join')}

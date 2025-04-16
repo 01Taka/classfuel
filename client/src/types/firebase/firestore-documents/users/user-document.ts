@@ -1,4 +1,4 @@
-import { FieldValue, Timestamp } from 'firebase/firestore'
+import { Timestamp } from 'firebase/firestore'
 import {
   BaseDocumentRead,
   BaseDocumentWrite,
@@ -10,7 +10,7 @@ interface UserData {
   birthdate: Timestamp
   gender: Gender
   session: UserSession | null // 現在のセッション情報（nullの場合はセッション中でない）
-  participatingTeamIds: string[] | FieldValue // ユーザーが参加しているチームのID
+  activeTeamId: string | null
 }
 
 export interface UserSession {
@@ -23,7 +23,5 @@ export interface UserSession {
   status: 'running' | 'stopped'
 }
 
-export type UserRead = BaseDocumentRead & {
-  participatingTeamIds: string[]
-} & UserData
+export type UserRead = BaseDocumentRead & UserData
 export type UserWrite = BaseDocumentWrite & UserData

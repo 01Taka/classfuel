@@ -5,24 +5,23 @@ import { useState } from 'react'
 import Btn from '../../atoms/Btn'
 import { ArrowDropDownIcon } from '@mui/x-date-pickers'
 import { GroupAdd } from '@mui/icons-material'
+import { UserJoinedTeamRead } from '../../../types/firebase/firestore-documents/users/user-joined-team-document'
 
-type Team = { id: string; name: string }
-
-type Props = {
-  teams: Team[]
-  currentTeamId: string
+interface TeamDropdownMenuProps {
+  teams: UserJoinedTeamRead[]
+  currentTeamId: string | null
   onChangeTeam: (id: string) => void
   onCreateTeam: () => void
   onJoinTeam: () => void
 }
 
-export const TeamDropdownMenu = ({
+export const TeamDropdownMenu: React.FC<TeamDropdownMenuProps> = ({
   teams,
   currentTeamId,
   onChangeTeam,
   onCreateTeam,
   onJoinTeam,
-}: Props) => {
+}) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   const handleOpen = (e: React.MouseEvent<HTMLElement>) => {
@@ -34,17 +33,17 @@ export const TeamDropdownMenu = ({
   return (
     <>
       <Btn onClick={handleOpen} color="inherit">
-        {teams.find((t) => t.id === currentTeamId)?.name ?? 'チーム未選択'}
+        {teams.find((t) => t.docId === currentTeamId)?.name ?? 'チーム未選択'}
         <ArrowDropDownIcon />
       </Btn>
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         {teams.map((team) => (
           <MenuItem
-            key={team.id}
-            selected={team.id === currentTeamId}
+            key={team.docId}
+            selected={team.docId === currentTeamId}
             onClick={() => {
-              onChangeTeam(team.id)
+              onChangeTeam(team.docId)
               handleClose()
             }}
           >
