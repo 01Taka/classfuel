@@ -47,13 +47,13 @@ abstract class FirestoreService<
   // ======================================================================
 
   /**
-   * 不要な情報を除外し、必要なデータがあるかの確認をした書き込みデータを返します。
+   * 不要な情報を除外した書き込みデータを返します。
    * サブクラスで実装してください。
    * @param data 書き込むデータ
    */
-  protected abstract filterCreateData(data: Write): Document
-
-  protected abstract filterUpdateData(data: Partial<Write>): Partial<Document>
+  protected abstract filterWriteData<T extends Write | Partial<Write>>(
+    data: T
+  ): T extends Write ? Document : Partial<Document>
 
   private getUid(): string {
     const uid = getAuth().currentUser?.uid
@@ -92,7 +92,7 @@ abstract class FirestoreService<
   }
 
   private organizeCreateData(data: Write): Document & { createdById: string } {
-    const formatData = this.filterCreateData(data) as Document & {
+    const formatData = this.filterWriteData(data) as Document & {
       createdById: string
     }
     formatData.createdById = this.getUid()
@@ -107,7 +107,7 @@ abstract class FirestoreService<
   }
 
   private organizeUpdateData(data: Partial<Write>): Partial<Document> {
-    const filterData = this.filterUpdateData(data)
+    const filterData = this.filterWriteData(data)
     const formatData = this.removeUndefined(filterData)
     return { ...formatData, updatedAt: serverTimestamp() }
   }

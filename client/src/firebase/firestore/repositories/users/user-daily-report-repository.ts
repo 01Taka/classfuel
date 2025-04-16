@@ -13,15 +13,12 @@ export class DailyReportRepository extends FirestoreService<
     super(db, ['users', 'dailyReports'])
   }
 
-  protected filterCreateData(data: DailyReportWrite): DailyReportWrite {
+  protected filterWriteData<
+    T extends DailyReportWrite | Partial<DailyReportWrite>,
+  >(
+    data: T
+  ): T extends DailyReportWrite ? DailyReportWrite : Partial<DailyReportWrite> {
     const { date, studyTime } = data
-    return { date, studyTime }
-  }
-
-  protected filterUpdateData(
-    data: Partial<DailyReportWrite>
-  ): Partial<DailyReportWrite> {
-    const { date, studyTime } = data
-    return { date, studyTime }
+    return { date, studyTime } as any
   }
 }

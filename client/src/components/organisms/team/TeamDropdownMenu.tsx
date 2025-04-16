@@ -2,7 +2,7 @@ import { Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
 import GroupIcon from '@mui/icons-material/Group'
 import AddIcon from '@mui/icons-material/Add'
 import { useState } from 'react'
-import Btn from '../atoms/Btn'
+import Btn from '../../atoms/Btn'
 import { ArrowDropDownIcon } from '@mui/x-date-pickers'
 import { GroupAdd } from '@mui/icons-material'
 

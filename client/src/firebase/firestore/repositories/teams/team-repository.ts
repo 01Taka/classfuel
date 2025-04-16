@@ -10,13 +10,10 @@ export class TeamRepository extends FirestoreService<TeamRead, TeamWrite> {
     super(db, ['teams'])
   }
 
-  protected filterCreateData(data: TeamWrite): TeamWrite {
+  protected filterWriteData<T extends TeamWrite | Partial<TeamWrite>>(
+    data: T
+  ): T extends TeamWrite ? TeamWrite : Partial<TeamWrite> {
     const { name } = data
-    return { name }
-  }
-
-  protected filterUpdateData(data: Partial<TeamWrite>): Partial<TeamWrite> {
-    const { name } = data
-    return { name }
+    return { name } as any
   }
 }

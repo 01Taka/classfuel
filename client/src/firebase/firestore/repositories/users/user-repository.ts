@@ -10,7 +10,9 @@ export class UserRepository extends FirestoreService<UserRead, UserWrite> {
     super(db, ['users'])
   }
 
-  protected filterCreateData(data: UserWrite): UserWrite {
+  protected filterWriteData<T extends UserWrite | Partial<UserWrite>>(
+    data: T
+  ): T extends UserWrite ? UserWrite : Partial<UserWrite> {
     const {
       displayName,
       birthdate,
@@ -26,25 +28,6 @@ export class UserRepository extends FirestoreService<UserRead, UserWrite> {
       friendIds,
       session,
       participatingTeamIds,
-    }
-  }
-
-  protected filterUpdateData(data: Partial<UserWrite>): Partial<UserWrite> {
-    const {
-      displayName,
-      birthdate,
-      gender,
-      friendIds,
-      session,
-      participatingTeamIds,
-    } = data
-    return {
-      displayName,
-      birthdate,
-      gender,
-      friendIds,
-      session,
-      participatingTeamIds,
-    }
+    } as any
   }
 }

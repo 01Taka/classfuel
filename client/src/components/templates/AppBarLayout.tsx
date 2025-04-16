@@ -1,11 +1,11 @@
 import { AppBar, Toolbar, Box } from '@mui/material'
 import React from 'react'
-import { TeamDropdownMenu } from '../organisms/TeamDropdownMenu'
+import { TeamDropdownMenu } from '../organisms/team/TeamDropdownMenu'
 import NotificationsIcon from '@mui/icons-material/Notifications'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
-import JoinTeam from '../organisms/JoinTeam'
+import JoinTeam from '../organisms/team/JoinTeam'
 import Popup from '../molecules/Popup'
-import CreateTeam from '../organisms/CreateTeam'
+import CreateTeam from '../organisms/team/CreateTeam'
 
 interface AppBarLayoutProps {}
 
