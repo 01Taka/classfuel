@@ -16,7 +16,8 @@ const getRanking = async (
 ): Promise<number> => {
   const members = await teamMemberRepo.getAll([teamId])
   const todayStudyTimes = members.map((member) => member.todayStudyTime)
-  return todayStudyTimes.indexOf(studyTime) ?? 0
+
+  return todayStudyTimes.indexOf(studyTime) + 1
 }
 
 const TodayStudyPanel: React.FC<TodayStudyPanelProps> = ({}) => {
