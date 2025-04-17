@@ -13,7 +13,7 @@ export class TeamRepository extends FirestoreService<TeamRead, TeamWrite> {
   protected filterWriteData<T extends TeamWrite | Partial<TeamWrite>>(
     data: T
   ): T extends TeamWrite ? TeamWrite : Partial<TeamWrite> {
-    const { name } = data
-    return { name } as any
+    const { name, codeId } = data
+    return { name, codeId } as any
   }
 }

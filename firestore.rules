@@ -76,5 +76,16 @@ service cloud.firestore {
         allow delete: if false;
       }
     }
+
+    match /teamCodes/{codeId} {
+      
+      allow read: if isSignedIn() && request.auth.uid == userId;
+
+      allow create: if isSignedIn() && isCreatingNewDocWithServerTimestamp();
+
+      allow update: if isSignedIn() && request.auth.uid == userId;
+
+      allow delete: if false;
+    }
   }
 }

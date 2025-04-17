@@ -1,7 +1,25 @@
-import { CollectionReference, doc, Transaction } from 'firebase/firestore'
-import { BaseDocumentWrite } from '../../../types/firebase/firestore-document-types'
+import {
+  CollectionReference,
+  doc,
+  DocumentSnapshot,
+  Transaction,
+} from 'firebase/firestore'
+import {
+  BaseDocumentRead,
+  BaseDocumentWrite,
+} from '../../../types/firebase/firestore-document-types'
 
 class TransactionHandler {
+  static async get<T extends BaseDocumentRead>(
+    transaction: Transaction,
+    collectionRef: CollectionReference,
+    documentId: string
+  ): Promise<DocumentSnapshot<T>> {
+    const docRef = doc(collectionRef, documentId)
+    const result = await transaction.get(docRef)
+    return result as DocumentSnapshot<T>
+  }
+
   static set(
     transaction: Transaction,
     data: BaseDocumentWrite,

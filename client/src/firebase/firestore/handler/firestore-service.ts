@@ -456,6 +456,20 @@ abstract class FirestoreService<
     return this.transaction
   }
 
+  async getInTransaction(
+    documentId: string,
+    parentDocumentIds: string[] = [],
+    transaction = this.getTransaction('getInTransaction()')
+  ): Promise<Read | null> {
+    const collectionRef = this.getCollectionRef(parentDocumentIds)
+    const result = await TransactionHandler.get(
+      transaction,
+      collectionRef,
+      documentId
+    )
+    return parseDocumentSnapshot<Read>(result)
+  }
+
   setInTransaction(
     data: Write,
     documentId: string | null,

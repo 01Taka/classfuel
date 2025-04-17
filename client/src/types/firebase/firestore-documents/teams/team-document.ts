@@ -5,6 +5,7 @@ import {
 
 export interface TeamData {
   name: string
+  codeId: string
 }
 
 export type TeamRead = BaseDocumentRead & TeamData
