@@ -11,36 +11,74 @@ import { UserJoinedTeamRead } from '../../types/firebase/firestore-documents/use
 import { useCurrentUserStore } from '../../stores/currentUserStore'
 import { UserRepository } from '../../firebase/firestore/repositories/users/user-repository'
 import { handleJoinTeam } from '../../functions/services/team-services'
+import { TeamRead } from '../../types/firebase/firestore-documents/teams/team-document'
+import { TeamRepository } from '../../firebase/firestore/repositories/teams/team-repository'
 
 interface AppBarLayoutProps {}
 
 const userRepo = new UserRepository()
 const userJoinedTeamRepo = new UserJoinedTeamRepository()
+const teamRepo = new TeamRepository()
 
 const AppBarLayout: React.FC<AppBarLayoutProps> = ({}) => {
   const { uid, user } = useCurrentUserStore()
   const [openPopupType, setOpenPopupType] = React.useState<
     'join' | 'create' | null
   >(null)
-  const [teams, setTeams] = useState<UserJoinedTeamRead[] | null>(null)
+  const [userJoinedTeams, setUserJoinedTeams] = useState<
+    UserJoinedTeamRead[] | null
+  >(null)
+  const [teams, setTeams] = useState<TeamRead[] | null>(null)
+
+  useEffect(() => {
+    const fetchUserJoinedTeams = async () => {
+      if (!uid) return
+      const userJoinedTeams = await userJoinedTeamRepo.getAll([uid])
+      setUserJoinedTeams(userJoinedTeams)
+    }
+    fetchUserJoinedTeams()
+  }, [uid])
 
   useEffect(() => {
     const fetchTeams = async () => {
-      if (!uid) return
-      const teams = await userJoinedTeamRepo.getAll([uid])
-      setTeams(teams)
+      if (uid && userJoinedTeams) {
+        const teamIds = userJoinedTeams.map((team) => team.docId)
+        const fetchPromise = teamIds.map(
+          async (teamId) => await teamRepo.read(teamId)
+        )
+        const teams = await Promise.all(fetchPromise)
+        setTeams(teams.filter((team) => team !== null))
+      }
     }
     fetchTeams()
-  }, [uid])
+  }, [userJoinedTeams])
 
   const onChangeTeam = async (id: string) => {
     if (!uid) return
     userRepo.update({ activeTeamId: id }, uid)
   }
 
-  const onJoinTeam = (code: string) => {
+  const extractTeamCode = (input: string): string => {
+    try {
+      const url = new URL(input)
+      const match = url.pathname.match(/\/join-team\/([^/]+)/)
+      return match ? match[1] : input
+    } catch {
+      // 入力がURLでなければそのままコードとして返す
+      return input
+    }
+  }
+
+  const isRogueFirestoreId = (id: string): boolean => {
+    return /[\/\\.#$\[\]]/.test(id)
+  }
+
+  const onJoinTeam = (codeOrUrl: string) => {
     if (!user) return
-    console.log(code)
+    const code = extractTeamCode(codeOrUrl)
+    if (isRogueFirestoreId(code) || code.length !== 20) {
+      return
+    }
     handleJoinTeam(user, 0, code)
   }
 
@@ -50,7 +88,7 @@ const AppBarLayout: React.FC<AppBarLayoutProps> = ({}) => {
         {/* Left: Team selector */}
         <Box>
           <TeamDropdownMenu
-            teams={teams ?? []}
+            teams={userJoinedTeams ?? []}
             currentTeamId={user?.activeTeamId ?? null}
             onChangeTeam={onChangeTeam}
             onCreateTeam={() => setOpenPopupType('create')}
@@ -71,7 +109,11 @@ const AppBarLayout: React.FC<AppBarLayoutProps> = ({}) => {
       >
         {openPopupType &&
           (openPopupType === 'join' ? (
-            <JoinTeam onQrCodeScan={onJoinTeam} onTeamIdInput={onJoinTeam} />
+            <JoinTeam
+              teams={teams ?? []}
+              onQrCodeScan={onJoinTeam}
+              onTeamIdInput={onJoinTeam}
+            />
           ) : (
             <CreateTeam onSuccess={() => setOpenPopupType(null)} />
           ))}

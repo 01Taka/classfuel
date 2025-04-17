@@ -1,18 +1,36 @@
-import { Box, Button, Stack, TextField, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  IconButton,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
 import React, { useState } from 'react'
-import { QrCode2, Search } from '@mui/icons-material'
+import { QrCode, QrCode2, Search } from '@mui/icons-material'
 import { useQrScanner } from '../../../hooks/useQrScanner'
 import IconButtonWithLabel from '../../atoms/IconButtonWithLabel'
 import Popup from '../../molecules/Popup'
 import CameraPreview from '../CameraPreview'
+import { TeamRead } from '../../../types/firebase/firestore-documents/teams/team-document'
+import TeamJoinInfoCard from '../../../features/team/TeamJoinInfoCard'
 
 interface JoinTeamProps {
+  teams: TeamRead[]
   onQrCodeScan?: (result: string) => void
   onTeamIdInput?: (code: string) => void
 }
 
-const JoinTeam: React.FC<JoinTeamProps> = ({ onQrCodeScan, onTeamIdInput }) => {
+const JoinTeam: React.FC<JoinTeamProps> = ({
+  teams,
+  onQrCodeScan,
+  onTeamIdInput,
+}) => {
   const [openTeamCodeInput, setOpenTeamCodeInput] = useState(false)
+  const [openTeamCodeInfo, setOpenTeamCodeInfo] = useState<{
+    code: string
+    url: string
+  } | null>(null)
   const [teamCode, setTeamCode] = useState('')
   const {
     scanning,
@@ -23,6 +41,10 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ onQrCodeScan, onTeamIdInput }) => {
     stopScanning,
   } = useQrScanner(onQrCodeScan)
 
+  const getJoinPageUrl = (teamCode: string) => {
+    return `http://localhost:5173/join-team/${teamCode}`
+  }
+
   return (
     <Box sx={{ padding: 2 }}>
       <Typography variant="h6">自分が参加</Typography>
@@ -31,13 +53,45 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ onQrCodeScan, onTeamIdInput }) => {
           <QrCode2 fontSize="large" />
         </IconButtonWithLabel>
         <IconButtonWithLabel
-          label="チームIDで参加"
+          label="チームコードで参加"
           onClick={() => setOpenTeamCodeInput(true)}
         >
           <Search fontSize="large" />
         </IconButtonWithLabel>
       </Stack>
-      <Typography variant="h6">友達が参加</Typography>
+      <Stack>
+        <Typography variant="h6">友達が参加</Typography>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          spacing={1}
+        >
+          <Typography>チーム名</Typography>
+          <Typography>参加コード</Typography>
+        </Stack>
+        {teams.map((team) => (
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            spacing={1}
+          >
+            <Typography mr={2}>{team.name}</Typography>
+            <IconButton
+              onClick={() =>
+                setOpenTeamCodeInfo({
+                  code: team.codeId,
+                  url: getJoinPageUrl(team.codeId),
+                })
+              }
+              sx={{ pr: 3 }}
+            >
+              <QrCode sx={{ width: 36, height: 36 }} />
+            </IconButton>
+          </Stack>
+        ))}
+      </Stack>
       <Popup open={!scanned && scanning} onClose={stopScanning}>
         <Box sx={{ padding: 2, bgcolor: 'Background' }}>
           <CameraPreview canvasRef={canvasRef} videoRef={videoRef} />
@@ -65,6 +119,14 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ onQrCodeScan, onTeamIdInput }) => {
             決定
           </Button>
         </Stack>
+      </Popup>
+      <Popup onClose={() => setOpenTeamCodeInfo(null)}>
+        {openTeamCodeInfo && (
+          <TeamJoinInfoCard
+            teamCode={openTeamCodeInfo.code}
+            joinUrl={openTeamCodeInfo.url}
+          />
+        )}
       </Popup>
     </Box>
   )
