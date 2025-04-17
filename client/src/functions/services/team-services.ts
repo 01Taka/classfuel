@@ -71,20 +71,21 @@ export const handleJoinTeam = async (
 
       const isAlreadyMember = await teamMemberRepo.getInTransaction(
         user.docId,
-        [team.id]
+        [team.docId]
       )
       if (isAlreadyMember) {
         throw new Error('User is already a member of this team.')
       }
 
-      userJoinedTeamRepo.setInTransaction({ name: team.name }, team.id, [
+      userJoinedTeamRepo.setInTransaction({ name: team.name }, team.docId, [
         user.docId,
-      ]),
-        teamMemberRepo.setInTransaction(
-          { ...user, iconUrl: '', todayStudyTime },
-          user.docId,
-          [team.id]
-        )
+      ])
+
+      teamMemberRepo.setInTransaction(
+        { ...user, iconUrl: '', todayStudyTime },
+        user.docId,
+        [team.docId]
+      )
     }, [teamRepo, userJoinedTeamRepo, teamMemberRepo, teamCodeRepo])
   } catch (error) {
     console.error('handleJoinTeam error:', error)

@@ -10,6 +10,7 @@ import { UserJoinedTeamRepository } from '../../firebase/firestore/repositories/
 import { UserJoinedTeamRead } from '../../types/firebase/firestore-documents/users/user-joined-team-document'
 import { useCurrentUserStore } from '../../stores/currentUserStore'
 import { UserRepository } from '../../firebase/firestore/repositories/users/user-repository'
+import { handleJoinTeam } from '../../functions/services/team-services'
 
 interface AppBarLayoutProps {}
 
@@ -37,6 +38,12 @@ const AppBarLayout: React.FC<AppBarLayoutProps> = ({}) => {
     userRepo.update({ activeTeamId: id }, uid)
   }
 
+  const onJoinTeam = (code: string) => {
+    if (!user) return
+    console.log(code)
+    handleJoinTeam(user, 0, code)
+  }
+
   return (
     <AppBar sx={{ position: 'fixed', top: 0, left: 0, right: 0 }}>
       <Toolbar sx={{ justifyContent: 'space-between' }}>
@@ -57,10 +64,14 @@ const AppBarLayout: React.FC<AppBarLayoutProps> = ({}) => {
           <AccountCircleIcon />
         </Box>
       </Toolbar>
-      <Popup onClose={() => setOpenPopupType(null)} sx={{ bgcolor: 'white' }}>
+      <Popup
+        onClose={() => setOpenPopupType(null)}
+        sx={{ bgcolor: 'white' }}
+        justifyContent="flex-start"
+      >
         {openPopupType &&
           (openPopupType === 'join' ? (
-            <JoinTeam />
+            <JoinTeam onQrCodeScan={onJoinTeam} onTeamIdInput={onJoinTeam} />
           ) : (
             <CreateTeam onSuccess={() => setOpenPopupType(null)} />
           ))}

@@ -9,15 +9,27 @@ import {
   BaseDocumentWrite,
 } from '../../../types/firebase/firestore-document-types'
 
+function handleFirestoreError(error: unknown, operation: string): never {
+  // エラーロギングや通知をここで実行できる
+  console.error(`Firestore ${operation} error:`, error)
+  throw new Error(
+    `Failed to ${operation} document: ${error instanceof Error ? error.message : String(error)}`
+  )
+}
+
 class TransactionHandler {
   static async get<T extends BaseDocumentRead>(
     transaction: Transaction,
     collectionRef: CollectionReference,
     documentId: string
   ): Promise<DocumentSnapshot<T>> {
-    const docRef = doc(collectionRef, documentId)
-    const result = await transaction.get(docRef)
-    return result as DocumentSnapshot<T>
+    try {
+      const docRef = doc(collectionRef, documentId)
+      const result = await transaction.get(docRef)
+      return result as DocumentSnapshot<T>
+    } catch (error) {
+      handleFirestoreError(error, 'get')
+    }
   }
 
   static set(
@@ -26,10 +38,14 @@ class TransactionHandler {
     collectionRef: CollectionReference,
     documentId: string | null
   ): void {
-    const docRef = documentId
-      ? doc(collectionRef, documentId)
-      : doc(collectionRef)
-    transaction.set(docRef, data)
+    try {
+      const docRef = documentId
+        ? doc(collectionRef, documentId)
+        : doc(collectionRef)
+      transaction.set(docRef, data)
+    } catch (error) {
+      handleFirestoreError(error, 'set')
+    }
   }
 
   static update(
@@ -38,8 +54,12 @@ class TransactionHandler {
     collectionRef: CollectionReference,
     documentId: string
   ): void {
-    const docRef = doc(collectionRef, documentId)
-    transaction.update(docRef, data as BaseDocumentWrite)
+    try {
+      const docRef = doc(collectionRef, documentId)
+      transaction.update(docRef, data as BaseDocumentWrite)
+    } catch (error) {
+      handleFirestoreError(error, 'update')
+    }
   }
 
   static delete(
@@ -47,8 +67,12 @@ class TransactionHandler {
     collectionRef: CollectionReference,
     documentId: string
   ): void {
-    const docRef = doc(collectionRef, documentId)
-    transaction.delete(docRef)
+    try {
+      const docRef = doc(collectionRef, documentId)
+      transaction.delete(docRef)
+    } catch (error) {
+      handleFirestoreError(error, 'delete')
+    }
   }
 }
 

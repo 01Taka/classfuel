@@ -79,7 +79,7 @@ service cloud.firestore {
 
     match /teamCodes/{codeId} {
       
-      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow read: if true;
 
       allow create: if isSignedIn() && isCreatingNewDocWithServerTimestamp();
 

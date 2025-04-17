@@ -11,8 +11,10 @@ interface PopupProps {
   absoluteCloseButton?: boolean
   stackDirection?: 'row' | 'column'
   justifyContent?:
-    | 'flex-start'
+    | 'start'
+    | 'end'
     | 'center'
+    | 'flex-start'
     | 'flex-end'
     | 'space-between'
     | 'space-around'
@@ -36,7 +38,7 @@ const Popup: FC<PopupProps> = ({
   modalSx,
   absoluteCloseButton = false,
   stackDirection = 'column',
-  justifyContent,
+  justifyContent = 'center',
   alignItems = 'center',
   spacing,
   onClose,
