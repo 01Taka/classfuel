@@ -4,6 +4,7 @@ import { TeamCodeRepository } from '../../firebase/firestore/repositories/team-c
 import { TeamMemberRepository } from '../../firebase/firestore/repositories/teams/team-member-repository'
 import { TeamRepository } from '../../firebase/firestore/repositories/teams/team-repository'
 import { UserJoinedTeamRepository } from '../../firebase/firestore/repositories/users/user-joined-team-repository'
+import { TeamRead } from '../../types/firebase/firestore-documents/teams/team-document'
 import { UserRead } from '../../types/firebase/firestore-documents/users/user-document'
 
 const userJoinedTeamRepo = new UserJoinedTeamRepository()
@@ -91,4 +92,21 @@ export const handleJoinTeam = async (
     console.error('handleJoinTeam error:', error)
     throw new Error('チーム参加中にエラーが発生しました')
   }
+}
+
+export const handleFetchTeamByCode = async (
+  code: string
+): Promise<TeamRead | null> => {
+  const teamCode = await teamCodeRepo.read(code)
+
+  if (!teamCode) {
+    console.error(`Team code not found for code: ${code}`)
+    return null
+  }
+  const team = await teamRepo.read(teamCode.teamId)
+  return team
+}
+
+export const getMemberData = async (userId: string, teamId: string) => {
+  return await teamMemberRepo.read(userId, [teamId])
 }

@@ -7,6 +7,7 @@ import Chat from './components/pages/Chat'
 import VoiceShare from './components/pages/VoiceShare'
 import Session from './components/pages/Session'
 import useInit from './hooks/init/useInit'
+import JoinTeam from './components/pages/JoinTeam'
 
 function App() {
   useInit()
@@ -17,6 +18,7 @@ function App() {
       <Route path="/chat" element={<Chat />} />
       <Route path="/voice-share" element={<VoiceShare />} />
       <Route path="/session" element={<Session />} />
+      <Route path="join-team/:code" element={<JoinTeam />} />
       <Route path="*" element={<NotFound />} />
       <Route path="/login" element={<Login />} />
       <Route path="/user-setup" element={<UserSetup />} />

@@ -18,8 +18,10 @@ import { ISODate } from '../../../types/datetime-types'
 import { Gender } from '../../../types/firebase/util-document-types'
 import { useNavigate } from 'react-router-dom'
 import { useCurrentUserStore } from '../../../stores/currentUserStore'
+import { UserWrite } from '../../../types/firebase/firestore-documents/users/user-document'
 
 const nextPage = '/'
+const userRepo = new UserRepository()
 
 const UserSetup: React.FC = () => {
   const { uid } = useCurrentUserStore()
@@ -35,10 +37,10 @@ const UserSetup: React.FC = () => {
         birthdate: toTimestamp(birthdate),
         gender,
         session: null,
-      }
+        activeTeamId: null,
+      } as UserWrite
 
-      const repo = new UserRepository()
-      await repo.createWithId(userInfo, uid)
+      await userRepo.createWithId(userInfo, uid)
 
       navigate(nextPage)
     }
