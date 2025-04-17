@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect } from 'react'
 import {
   Box,
   Button,
@@ -7,7 +7,6 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  SelectChangeEvent,
   TextField,
   Typography,
   Paper,
@@ -19,23 +18,39 @@ import { Gender } from '../../../types/firebase/util-document-types'
 import { useNavigate } from 'react-router-dom'
 import { useCurrentUserStore } from '../../../stores/currentUserStore'
 import { UserWrite } from '../../../types/firebase/firestore-documents/users/user-document'
+import useFormState from '../../../hooks/form/useFormState'
 
 const nextPage = '/'
 const userRepo = new UserRepository()
 
+interface FormState {
+  displayName: string
+  birthdate: ISODate | ''
+  gender: Gender | ''
+}
+
 const UserSetup: React.FC = () => {
-  const { uid } = useCurrentUserStore()
+  const { uid, user } = useCurrentUserStore()
   const navigate = useNavigate()
-  const [nickname, setNickname] = useState('')
-  const [birthdate, setBirthdate] = useState<ISODate | ''>('')
-  const [gender, setGender] = useState<Gender | ''>('')
+  const { formState, hasEmptyInput, createInputProps } =
+    useFormState<FormState>({
+      displayName: '',
+      birthdate: '',
+      gender: '',
+    })
+
+  useEffect(() => {
+    if (user) {
+      navigate('/')
+    }
+  }, [user])
 
   const handleSubmit = async () => {
-    if (uid && nickname && birthdate && gender) {
+    if (uid && !hasEmptyInput) {
       const userInfo = {
-        displayName: nickname,
-        birthdate: toTimestamp(birthdate),
-        gender,
+        displayName: formState.displayName,
+        birthdate: toTimestamp(formState.birthdate as ISODate),
+        gender: formState.gender,
         session: null,
         activeTeamId: null,
       } as UserWrite
@@ -62,17 +77,19 @@ const UserSetup: React.FC = () => {
           <Box display="flex" flexDirection="column" gap={3} mt={2}>
             <TextField
               label="ニックネーム"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
+              {...createInputProps('displayName')}
               fullWidth
             />
 
             <TextField
               label="生年月日"
               type="date"
-              value={birthdate}
-              onChange={(e) => setBirthdate(e.target.value as ISODate)}
-              InputLabelProps={{ shrink: true }}
+              {...createInputProps('birthdate')}
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                },
+              }}
               fullWidth
             />
 
@@ -80,11 +97,8 @@ const UserSetup: React.FC = () => {
               <InputLabel id="gender-label">性別</InputLabel>
               <Select
                 labelId="gender-label"
-                value={gender}
                 label="性別"
-                onChange={(e: SelectChangeEvent) =>
-                  setGender(e.target.value as Gender)
-                }
+                {...createInputProps('gender')}
               >
                 <MenuItem value="male">男性</MenuItem>
                 <MenuItem value="female">女性</MenuItem>
@@ -98,6 +112,7 @@ const UserSetup: React.FC = () => {
               onClick={handleSubmit}
               sx={{ borderRadius: 3 }}
               fullWidth
+              disabled={hasEmptyInput}
             >
               保存して進む
             </Button>
