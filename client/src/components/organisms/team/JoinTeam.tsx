@@ -28,6 +28,7 @@ const JoinTeam: React.FC<JoinTeamProps> = ({
 }) => {
   const [openTeamCodeInput, setOpenTeamCodeInput] = useState(false)
   const [openTeamCodeInfo, setOpenTeamCodeInfo] = useState<{
+    name: string
     code: string
     url: string
   } | null>(null)
@@ -81,6 +82,7 @@ const JoinTeam: React.FC<JoinTeamProps> = ({
             <IconButton
               onClick={() =>
                 setOpenTeamCodeInfo({
+                  name: team.name,
                   code: team.codeId,
                   url: getJoinPageUrl(team.codeId),
                 })
@@ -123,6 +125,7 @@ const JoinTeam: React.FC<JoinTeamProps> = ({
       <Popup onClose={() => setOpenTeamCodeInfo(null)}>
         {openTeamCodeInfo && (
           <TeamJoinInfoCard
+            teamName={openTeamCodeInfo.name}
             teamCode={openTeamCodeInfo.code}
             joinUrl={openTeamCodeInfo.url}
           />

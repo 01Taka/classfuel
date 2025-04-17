@@ -56,14 +56,14 @@ const JoinTeam: React.FC = () => {
   const handleJoin = async () => {
     if (!code) return
     if (!uid) {
-      // ログイン処理ページ
+      navigate(`/login?team-code=${code}`)
       return
     }
     if (!user) {
-      // 初期設定ページ
+      navigate(`/user-setup?team-code=${code}`)
       return
     }
-    await handleJoinTeam(user, 0, code)
+    await handleJoinTeam({ ...user, todayStudyTime: 0 }, code)
     navigate('/')
   }
 

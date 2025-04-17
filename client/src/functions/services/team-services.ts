@@ -4,9 +4,14 @@ import { TeamCodeRepository } from '../../firebase/firestore/repositories/team-c
 import { TeamMemberRepository } from '../../firebase/firestore/repositories/teams/team-member-repository'
 import { TeamRepository } from '../../firebase/firestore/repositories/teams/team-repository'
 import { UserJoinedTeamRepository } from '../../firebase/firestore/repositories/users/user-joined-team-repository'
+import { UserRepository } from '../../firebase/firestore/repositories/users/user-repository'
 import { TeamRead } from '../../types/firebase/firestore-documents/teams/team-document'
-import { UserRead } from '../../types/firebase/firestore-documents/users/user-document'
+import {
+  UserRead,
+  UserSession,
+} from '../../types/firebase/firestore-documents/users/user-document'
 
+const userRepo = new UserRepository()
 const userJoinedTeamRepo = new UserJoinedTeamRepository()
 const teamRepo = new TeamRepository()
 const teamMemberRepo = new TeamMemberRepository()
@@ -52,9 +57,15 @@ export const handleCreateTeam = async (
 }
 
 export const handleJoinTeam = async (
-  user: UserRead,
-  todayStudyTime: number,
-  teamCodeId: string
+  user: {
+    docId: string
+    displayName: string
+    iconUrl?: string
+    session: UserSession | null
+    todayStudyTime: number
+  },
+  teamCodeId: string,
+  setAsActiveTeam?: boolean
 ) => {
   const transactionManager = new TransactionManager(db)
 
@@ -82,12 +93,14 @@ export const handleJoinTeam = async (
         user.docId,
       ])
 
-      teamMemberRepo.setInTransaction(
-        { ...user, iconUrl: '', todayStudyTime },
-        user.docId,
-        [team.docId]
-      )
-    }, [teamRepo, userJoinedTeamRepo, teamMemberRepo, teamCodeRepo])
+      teamMemberRepo.setInTransaction({ ...user, iconUrl: '' }, user.docId, [
+        team.docId,
+      ])
+
+      if (setAsActiveTeam) {
+        userRepo.updateInBatch({ activeTeamId: team.docId }, user.docId)
+      }
+    }, [teamRepo, userJoinedTeamRepo, teamMemberRepo, teamCodeRepo, userRepo])
   } catch (error) {
     console.error('handleJoinTeam error:', error)
     throw new Error('チーム参加中にエラーが発生しました')

@@ -15,10 +15,11 @@ import { UserRepository } from '../../../firebase/firestore/repositories/users/u
 import { toTimestamp } from '../../../functions/dateTime-utils/time-conversion'
 import { ISODate } from '../../../types/datetime-types'
 import { Gender } from '../../../types/firebase/util-document-types'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCurrentUserStore } from '../../../stores/currentUserStore'
 import { UserWrite } from '../../../types/firebase/firestore-documents/users/user-document'
 import useFormState from '../../../hooks/form/useFormState'
+import { handleJoinTeam } from '../../../functions/services/team-services'
 
 const nextPage = '/'
 const userRepo = new UserRepository()
@@ -31,6 +32,8 @@ interface FormState {
 
 const UserSetup: React.FC = () => {
   const { uid, user } = useCurrentUserStore()
+  const [searchParams] = useSearchParams()
+  const teamCode = searchParams.get('team-code')
   const navigate = useNavigate()
   const { formState, hasEmptyInput, createInputProps } =
     useFormState<FormState>({
@@ -56,6 +59,19 @@ const UserSetup: React.FC = () => {
       } as UserWrite
 
       await userRepo.createWithId(userInfo, uid)
+
+      if (teamCode) {
+        await handleJoinTeam(
+          {
+            docId: uid,
+            displayName: formState.displayName,
+            todayStudyTime: 0,
+            session: null,
+          },
+          teamCode,
+          true
+        )
+      }
 
       navigate(nextPage)
     }

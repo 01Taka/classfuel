@@ -4,7 +4,6 @@ import Home from './components/pages/Home'
 import Login from './components/pages/auth/Login'
 import UserSetup from './components/pages/auth/UserSetup'
 import Chat from './components/pages/Chat'
-import VoiceShare from './components/pages/VoiceShare'
 import Session from './components/pages/Session'
 import useInit from './hooks/init/useInit'
 import JoinTeam from './components/pages/JoinTeam'
@@ -16,7 +15,6 @@ function App() {
     <Routes>
       <Route path="/*" element={<Home />} />
       <Route path="/chat" element={<Chat />} />
-      <Route path="/voice-share" element={<VoiceShare />} />
       <Route path="/session" element={<Session />} />
       <Route path="join-team/:code" element={<JoinTeam />} />
       <Route path="*" element={<NotFound />} />

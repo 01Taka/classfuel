@@ -12,11 +12,13 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import { useState } from 'react'
 
 interface TeamJoinInfoCardProps {
+  teamName: string
   teamCode: string
   joinUrl: string
 }
 
 const TeamJoinInfoCard: React.FC<TeamJoinInfoCardProps> = ({
+  teamName,
   teamCode,
   joinUrl,
 }) => {
@@ -36,7 +38,10 @@ const TeamJoinInfoCard: React.FC<TeamJoinInfoCardProps> = ({
       <Card sx={{ borderRadius: 3, p: 2, maxWidth: 360, mx: 'auto', mt: 3 }}>
         <CardContent>
           <Stack spacing={2} alignItems="center">
-            <QRCodeCanvas value={joinUrl} size={128} level="H" />
+            <Typography variant="h5" fontWeight="bold">
+              {teamName}
+            </Typography>
+            <QRCodeCanvas value={joinUrl} size={128} level="M" />
             <Typography variant="subtitle1" fontWeight="bold">
               チームコード: {teamCode}
             </Typography>

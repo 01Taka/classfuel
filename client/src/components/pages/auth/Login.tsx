@@ -2,19 +2,21 @@ import React from 'react'
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import { Button, Container, Typography, Box, Paper } from '@mui/material'
 import GoogleIcon from '@mui/icons-material/Google'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { auth } from '../../../firebase/firebase'
 
 const nextPage = '/user-setup'
 
 const Login: React.FC = () => {
   const provider = new GoogleAuthProvider()
+  const [searchParams] = useSearchParams()
+  const teamCode = searchParams.get('team-code')
   const navigate = useNavigate()
 
   const handleLogin = async () => {
     try {
       await signInWithPopup(auth, provider)
-      navigate(nextPage)
+      navigate(teamCode ? `${nextPage}?team-code=${teamCode}` : nextPage)
     } catch (error) {
       console.error('ログインエラー:', error)
       alert('ログインに失敗しました')

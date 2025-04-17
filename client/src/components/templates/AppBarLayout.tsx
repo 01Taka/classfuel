@@ -79,7 +79,7 @@ const AppBarLayout: React.FC<AppBarLayoutProps> = ({}) => {
     if (isRogueFirestoreId(code) || code.length !== 20) {
       return
     }
-    handleJoinTeam(user, 0, code)
+    handleJoinTeam({ ...user, todayStudyTime: 0 }, code)
   }
 
   return (
