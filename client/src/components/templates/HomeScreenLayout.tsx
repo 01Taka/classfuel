@@ -4,7 +4,7 @@ import StartPanel from '../organisms/StartPanel'
 import TodayStudyPanel from '../organisms/TodayStudyPanel'
 import { Stack } from '@mui/material'
 import ActiveUserPanel from '../organisms/ActiveUserPanel'
-import AppBarLayout from './AppBarLayout'
+import AppBarLayout from '../../features/appBar/components/AppBarLayout'
 
 interface HomeScreenLayoutProps {}
 

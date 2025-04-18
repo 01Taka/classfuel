@@ -1,15 +1,15 @@
-import { db } from '../../firebase/firebase'
-import TransactionManager from '../../firebase/firestore/handler/transaction-manager'
-import { TeamCodeRepository } from '../../firebase/firestore/repositories/team-codes/team-code-repository'
-import { TeamMemberRepository } from '../../firebase/firestore/repositories/teams/team-member-repository'
-import { TeamRepository } from '../../firebase/firestore/repositories/teams/team-repository'
-import { UserJoinedTeamRepository } from '../../firebase/firestore/repositories/users/user-joined-team-repository'
-import { UserRepository } from '../../firebase/firestore/repositories/users/user-repository'
-import { TeamRead } from '../../types/firebase/firestore-documents/teams/team-document'
+import { db } from '../../../firebase/firebase'
+import TransactionManager from '../../../firebase/firestore/handler/transaction-manager'
+import { TeamCodeRepository } from '../../../firebase/firestore/repositories/team-codes/team-code-repository'
+import { TeamMemberRepository } from '../../../firebase/firestore/repositories/teams/team-member-repository'
+import { TeamRepository } from '../../../firebase/firestore/repositories/teams/team-repository'
+import { UserJoinedTeamRepository } from '../../../firebase/firestore/repositories/users/user-joined-team-repository'
+import { UserRepository } from '../../../firebase/firestore/repositories/users/user-repository'
+import { TeamRead } from '../../../types/firebase/firestore-documents/teams/team-document'
 import {
   UserRead,
   UserSession,
-} from '../../types/firebase/firestore-documents/users/user-document'
+} from '../../../types/firebase/firestore-documents/users/user-document'
 
 const userRepo = new UserRepository()
 const userJoinedTeamRepo = new UserJoinedTeamRepository()
@@ -120,6 +120,6 @@ export const handleFetchTeamByCode = async (
   return team
 }
 
-export const getMemberData = async (userId: string, teamId: string) => {
+export const getTeamMemberData = async (userId: string, teamId: string) => {
   return await teamMemberRepo.read(userId, [teamId])
 }

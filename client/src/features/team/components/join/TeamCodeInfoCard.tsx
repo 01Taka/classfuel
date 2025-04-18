@@ -11,13 +11,13 @@ import { QRCodeCanvas } from 'qrcode.react'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import { useState } from 'react'
 
-interface TeamJoinInfoCardProps {
+interface TeamCodeInfoCardProps {
   teamName: string
   teamCode: string
   joinUrl: string
 }
 
-const TeamJoinInfoCard: React.FC<TeamJoinInfoCardProps> = ({
+const TeamCodeInfoCard: React.FC<TeamCodeInfoCardProps> = ({
   teamName,
   teamCode,
   joinUrl,
@@ -71,4 +71,4 @@ const TeamJoinInfoCard: React.FC<TeamJoinInfoCardProps> = ({
   )
 }
 
-export default TeamJoinInfoCard
+export default TeamCodeInfoCard

@@ -1,6 +1,6 @@
 import { UserRepository } from '../../../firebase/firestore/repositories/users/user-repository'
 import { toTimestamp } from '../../../functions/dateTime-utils/time-conversion'
-import { handleJoinTeam } from '../../../functions/services/team-services'
+import { handleJoinTeam } from '../../join-team/services/team-services'
 import { UserWrite } from '../../../types/firebase/firestore-documents/users/user-document'
 import { UserSetUpFormState } from '../hooks/useUserSetupForm'
 
