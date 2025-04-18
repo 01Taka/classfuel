@@ -8,30 +8,22 @@ import {
   extractTeamCode,
   isRogueFirestoreId,
 } from '../../../functions/team-code-utils'
+import { useJoinedTeamsStore } from '../../../stores/joinedTeamsStore'
 
 const userJoinedTeamRepo = new UserJoinedTeamRepository()
 const teamRepo = new TeamRepository()
 
 export const useAppBarState = () => {
   const { uid, user } = useCurrentUserStore()
+  const { joinedTeams } = useJoinedTeamsStore()
 
   const [popupType, setPopupType] = useState<'join' | 'create' | null>(null)
-  const [joinedTeams, setJoinedTeams] = useState<string[]>([])
   const [teams, setTeams] = useState<TeamRead[]>([])
 
-  // 1) ユーザー参加チームIDを取得
   useEffect(() => {
-    if (!uid) return
-    userJoinedTeamRepo
-      .getAll([uid])
-      .then((docs) => setJoinedTeams(docs.map((d) => d.docId)))
-  }, [uid])
-
-  // 2) チーム詳細を取得
-  useEffect(() => {
-    if (joinedTeams.length === 0) return
-    Promise.all(joinedTeams.map((id) => teamRepo.read(id))).then((res) =>
-      setTeams(res.filter(Boolean) as TeamRead[])
+    if (!joinedTeams || joinedTeams.length === 0) return
+    Promise.all(joinedTeams.map((team) => teamRepo.read(team.docId))).then(
+      (res) => setTeams(res.filter(Boolean) as TeamRead[])
     )
   }, [joinedTeams])
 

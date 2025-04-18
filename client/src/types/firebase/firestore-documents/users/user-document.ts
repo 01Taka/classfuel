@@ -21,6 +21,7 @@ export interface UserSession {
   stoppedAt: Timestamp | null // 途中で手動停止された場合に記録
   expectedDuration: number // ユーザーが設定したセッションの長さ
   status: 'running' | 'stopped'
+  elapsedDuration: number
 }
 
 export type UserRead = BaseDocumentRead & UserData

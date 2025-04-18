@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import TextWithLabel from '../atoms/TextWithLabel'
-import ContainerCard from '../atoms/ContainerCard'
-import { formatDuration } from '../../functions/dateTime-utils/time-format-utils'
-import { useCurrentUserStore } from '../../stores/currentUserStore'
-import useDailyReportService from '../../features/session/hooks/useDailyReportService'
-import { TeamMemberRepository } from '../../firebase/firestore/repositories/teams/team-member-repository'
+import TextWithLabel from '../../../components/atoms/TextWithLabel'
+import ContainerCard from '../../../components/atoms/ContainerCard'
+import { formatDuration } from '../../../functions/dateTime-utils/time-format-utils'
+import { useCurrentUserStore } from '../../../stores/currentUserStore'
+import useDailyReportService from '../../session/hooks/useDailyReportService'
+import { TeamMemberRepository } from '../../../firebase/firestore/repositories/teams/team-member-repository'
 
 interface TodayStudyPanelProps {}
 

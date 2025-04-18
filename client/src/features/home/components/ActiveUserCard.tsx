@@ -1,14 +1,13 @@
 import React from 'react'
-import ContainerCard from '../atoms/ContainerCard'
+import ContainerCard from '../../../components/atoms/ContainerCard'
 import { Box, Stack, Typography } from '@mui/material'
-import { formatTime } from '../../functions/dateTime-utils/time-format-utils'
-import IconWithLabel from '../atoms/AvaterWithLabel'
+import IconWithLabel from '../../../components/atoms/AvatarWithLabel'
 
 interface ActiveUserCardProps {
   iconUrl: string
   userName: string
   stateLabel: string
-  timerMs: number
+  timerText: string
   subjectLabel: string
   subjectColor: string
 }
@@ -17,7 +16,7 @@ const ActiveUserCard: React.FC<ActiveUserCardProps> = ({
   iconUrl,
   userName,
   stateLabel,
-  timerMs,
+  timerText,
   subjectLabel,
   subjectColor,
 }) => {
@@ -29,7 +28,7 @@ const ActiveUserCard: React.FC<ActiveUserCardProps> = ({
           {stateLabel}
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          {formatTime(timerMs)}
+          {timerText}
         </Typography>
       </Stack>
       <Box

@@ -1,13 +1,13 @@
 import React from 'react'
-import SwitchButton from '../atoms/SwitchButton'
-import StartButton from '../atoms/StartButton'
-import ContainerCard from '../atoms/ContainerCard'
+import SwitchButton from '../../../components/atoms/SwitchButton'
+import StartButton from '../../../components/atoms/StartButton'
+import ContainerCard from '../../../components/atoms/ContainerCard'
 import { useNavigate } from 'react-router-dom'
-import useSessionService from '../../features/session/hooks/useSessionService'
+import useSessionService from '../../session/hooks/useSessionService'
 import {
   breakTimeChoices,
   studyTimeChoices,
-} from '../../constants/session-time-constants'
+} from '../../../constants/session-time-constants'
 
 interface StartPanelProps {}
 

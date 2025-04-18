@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { UserRepository } from '../../../firebase/firestore/repositories/users/user-repository'
 import { UserSession } from '../../../types/firebase/firestore-documents/users/user-document'
 import {
@@ -7,23 +6,32 @@ import {
 } from '../../../functions/dateTime-utils/time-conversion'
 import useDailyReportService from './useDailyReportService'
 import { useCurrentUserStore } from '../../../stores/currentUserStore'
+import userTeamMemberService from './useTeamMemberService'
+
+const userRepo = new UserRepository()
 
 const useSessionService = () => {
   const { uid, user } = useCurrentUserStore()
   const { handleAddStudyTime } = useDailyReportService()
+  const { updateSession: updateSessionInMember } = userTeamMemberService()
   const session = user?.session || null
-  const userRepo = useMemo(() => new UserRepository(), [])
 
   const updateSession = async (updatedSession: UserSession | null) => {
     if (!uid) return
     await userRepo.update({ session: updatedSession }, uid)
+    await updateSessionInMember(updatedSession)
   }
 
   const now = () => Date.now()
   const nowTimestamp = () => toTimestamp(now())
 
+  // 累積 + 現在進行中の時間を合算
   const getStudyTime = (session: UserSession) => {
-    return now() - convertToMilliseconds(session.latestStartedAt)
+    const base = session.elapsedDuration || 0
+    if (session.status === 'running') {
+      return base + (now() - convertToMilliseconds(session.latestStartedAt))
+    }
+    return base
   }
 
   const createNewSession = (
@@ -40,6 +48,7 @@ const useSessionService = () => {
       stoppedAt: null,
       expectedDuration: durationMs,
       status: 'running',
+      elapsedDuration: 0,
     }
   }
 
@@ -55,16 +64,21 @@ const useSessionService = () => {
   const handleStopSession = async () => {
     if (!session || session.status !== 'running') return
 
+    const elapsed = now() - convertToMilliseconds(session.latestStartedAt)
+    const totalElapsed = (session.elapsedDuration || 0) + elapsed
+
     // 勉強中のみ加算
     if (session.type === 'study') {
-      await handleAddStudyTime(getStudyTime(session))
+      await handleAddStudyTime(totalElapsed)
     }
 
     const updatedSession: UserSession = {
       ...session,
       stoppedAt: nowTimestamp(),
       status: 'stopped',
+      elapsedDuration: totalElapsed,
     }
+
     await updateSession(updatedSession)
   }
 
@@ -90,9 +104,9 @@ const useSessionService = () => {
   const handleFinishSession = async () => {
     if (!session) return
 
-    // 勉強中でかつ running 状態のときのみ記録
-    if (session.type === 'study' && session.status === 'running') {
-      await handleAddStudyTime(getStudyTime(session))
+    if (session.type === 'study') {
+      const totalTime = getStudyTime(session)
+      await handleAddStudyTime(totalTime)
     }
 
     await updateSession(null)
@@ -104,8 +118,9 @@ const useSessionService = () => {
   ) => {
     if (!uid) return
 
-    if (session && session.type === 'study' && session.status === 'running') {
-      await handleAddStudyTime(getStudyTime(session))
+    if (session && session.type === 'study') {
+      const totalTime = getStudyTime(session)
+      await handleAddStudyTime(totalTime)
     }
 
     const newSession = createNewSession(type, durationMs)

@@ -1,5 +1,5 @@
 import React from 'react'
-import DateDisplay from '../atoms/DateDisplay'
+import DateDisplay from '../../../components/atoms/DateDisplay'
 import { Locale } from 'date-fns'
 
 interface TodayDisplayProps {

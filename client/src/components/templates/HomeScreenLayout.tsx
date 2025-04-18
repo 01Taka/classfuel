@@ -1,9 +1,9 @@
 import React from 'react'
-import TodayDisplay from '../molecules/TodayDisplay'
-import StartPanel from '../organisms/StartPanel'
-import TodayStudyPanel from '../organisms/TodayStudyPanel'
+import TodayDisplay from '../../features/home/components/TodayDisplay'
+import StartPanel from '../../features/home/components/StartPanel'
+import TodayStudyPanel from '../../features/home/components/TodayStudyPanel'
 import { Stack } from '@mui/material'
-import ActiveUserPanel from '../organisms/ActiveUserPanel'
+import ActiveUserPanel from '../../features/home/components/ActiveUserPanel'
 import AppBarLayout from '../../features/appBar/components/AppBarLayout'
 
 interface HomeScreenLayoutProps {}
