@@ -1,7 +1,7 @@
 import { Box, Stack } from '@mui/material'
 import React from 'react'
-import Btn from '../../atoms/Btn'
-import TimerDisplay from '../../atoms/TimerDisplay'
+import Btn from '../atoms/Btn'
+import TimerDisplay from '../atoms/TimerDisplay'
 
 interface TimerProps {
   time: number

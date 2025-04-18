@@ -1,8 +1,8 @@
 import { format, startOfDay, isSameMinute, isBefore } from 'date-fns'
 import { Timestamp } from 'firebase/firestore'
-import { TimeType, Days } from '../../types/utils/dateTimeTypes'
 import { convertToDate, convertToMilliseconds } from './time-conversion'
 import { DAYS_IN_MILLISECOND } from '../../constants/datetime-constants'
+import { Days, TimeType } from '../../types/datetime-types'
 
 export const isMidnight = (dateTime: TimeType) => {
   const date = convertToDate(dateTime)
