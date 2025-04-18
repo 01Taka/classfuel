@@ -12,6 +12,8 @@ type Status = 'idle' | 'loading' | 'error' | 'success'
 
 export const useJoinTeam = () => {
   const { code } = useParams<{ code: string }>()
+  console.log(code)
+
   const navigate = useNavigate()
   const { uid, user } = useCurrentUserStore()
 
@@ -62,5 +64,5 @@ export const useJoinTeam = () => {
     navigate('/')
   }, [code, uid, user, navigate])
 
-  return { team, status, isParticipated, handleJoin }
+  return { team, code, status, isParticipated, handleJoin }
 }

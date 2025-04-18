@@ -7,13 +7,13 @@ import { useJoinTeam } from '../../features/join-team/hooks/useJoinTeam'
 import LoadingIndicator from '../atoms/LoadingIndicator'
 
 const JoinTeamPage: React.FC = () => {
-  const { team, status, isParticipated, handleJoin } = useJoinTeam()
+  const { team, code, status, isParticipated, handleJoin } = useJoinTeam()
 
   return (
     <Container maxWidth="sm">
       <Box mt={6}>
         {status === 'loading' && <LoadingIndicator />}
-        {status === 'error' && <NotFoundMessage code={team?.docId ?? ''} />}
+        {status === 'error' && <NotFoundMessage code={code ?? ''} />}
         {status === 'success' && team && (
           <TeamPreview
             team={team}
