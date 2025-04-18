@@ -1,5 +1,6 @@
 export const generateTeamCodeUrl = (code: string) => {
-  return `http://localhost:5173/join-team/${code}`
+  const baseUrl = import.meta.env.VITE_BASE_URL
+  return `${baseUrl}/join-team/${code}`
 }
 
 export const extractTeamCode = (input: string): string => {
