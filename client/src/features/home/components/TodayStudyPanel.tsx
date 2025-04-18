@@ -4,24 +4,11 @@ import ContainerCard from '../../../components/atoms/ContainerCard'
 import { formatDuration } from '../../../functions/dateTime-utils/time-format-utils'
 import { useCurrentUserStore } from '../../../stores/currentUserStore'
 import useDailyReportService from '../../session/hooks/useDailyReportService'
-import { TeamMemberRepository } from '../../../firebase/firestore/repositories/teams/team-member-repository'
+import { getRanking } from './services/ranking-services'
 
 interface TodayStudyPanelProps {}
 
-const teamMemberRepo = new TeamMemberRepository()
-
-const getRanking = async (
-  teamId: string,
-  studyTime: number
-): Promise<number> => {
-  const members = await teamMemberRepo.getAll([teamId])
-  const todayStudyTimes = members.map((member) => member.todayStudyTime)
-  todayStudyTimes.sort((a, b) => b - a)
-
-  return todayStudyTimes.indexOf(studyTime) + 1
-}
-
-const TodayStudyPanel: React.FC<TodayStudyPanelProps> = ({}) => {
+const TodayStudyPanel: React.FC<TodayStudyPanelProps> = () => {
   const { user } = useCurrentUserStore()
   const { getTodayReport } = useDailyReportService()
   const [todayStudy, setTodayStudy] = useState<number>(0)

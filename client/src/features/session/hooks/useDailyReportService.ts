@@ -1,5 +1,8 @@
 import { DailyReportRepository } from '../../../firebase/firestore/repositories/users/user-daily-report-repository'
-import { toISODate } from '../../../functions/dateTime-utils/time-conversion'
+import {
+  getLocalDate,
+  toISODate,
+} from '../../../functions/dateTime-utils/time-conversion'
 import { useCurrentUserStore } from '../../../stores/currentUserStore'
 import userTeamMemberService from './useTeamMemberService'
 
@@ -9,7 +12,7 @@ const useDailyReportService = () => {
   const { uid } = useCurrentUserStore()
   const { updateTodayStudyTime: updateTodayStudyTimeAtMember } =
     userTeamMemberService()
-  const today = toISODate(Date.now())
+  const today = toISODate(getLocalDate())
 
   const getTodayReport = async () => {
     if (!uid) return null
