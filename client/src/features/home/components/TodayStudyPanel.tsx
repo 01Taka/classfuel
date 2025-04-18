@@ -16,6 +16,7 @@ const getRanking = async (
 ): Promise<number> => {
   const members = await teamMemberRepo.getAll([teamId])
   const todayStudyTimes = members.map((member) => member.todayStudyTime)
+  todayStudyTimes.sort((a, b) => b - a)
 
   return todayStudyTimes.indexOf(studyTime) + 1
 }

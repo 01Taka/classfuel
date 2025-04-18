@@ -1,18 +1,20 @@
 import React, { useMemo } from 'react'
 import ActiveUserCard from './ActiveUserCard'
-import { Stack, Typography } from '@mui/material'
+import { IconButton, Stack, Typography } from '@mui/material'
 import ContainerCard from '../../../components/atoms/ContainerCard'
 import useActiveTeamMembers from '../hooks/useActiveTeamMembers'
-import { UserSession } from '../../../types/firebase/firestore-documents/users/user-document'
 import useSessionsElapsedTime, {
   SessionTimerInfo,
 } from '../hooks/useSessionsElapsedTime'
 import { MINUTES_IN_MILLISECOND } from '../../../constants/datetime-constants'
+import useTeamMemberState from '../hooks/useTeamMemberState'
+import { ArrowRight } from '@mui/icons-material'
 
 interface ActiveUserPanelProps {}
 
 const ActiveUserPanel: React.FC<ActiveUserPanelProps> = ({}) => {
   const { members } = useActiveTeamMembers()
+  const { getStateLabel, getStateColor } = useTeamMemberState()
 
   // メンバーから自分自身を抜く処理を追加
 
@@ -30,14 +32,6 @@ const ActiveUserPanel: React.FC<ActiveUserPanelProps> = ({}) => {
     [members]
   )
 
-  const getStateLabel = (session: UserSession | null) => {
-    if (!session) return 'オフライン'
-    if (session.status === 'stopped') {
-      return '離席中'
-    }
-    return session.type === 'study' ? '勉強中' : '休憩中'
-  }
-
   const getTimerText = (timerInfo: SessionTimerInfo | null): string => {
     if (!timerInfo?.inSession) return ''
     const formatTime = (time: number) =>
@@ -53,7 +47,7 @@ const ActiveUserPanel: React.FC<ActiveUserPanelProps> = ({}) => {
   }
 
   return (
-    <ContainerCard>
+    <ContainerCard sx={{ position: 'relative' }}>
       <Stack direction="row" spacing={2} mb={2} alignItems="end">
         <Typography variant="h6" fontWeight={600}>
           活動中クラスメイト
@@ -62,19 +56,23 @@ const ActiveUserPanel: React.FC<ActiveUserPanelProps> = ({}) => {
           {activeMemberCount}人
         </Typography>
       </Stack>
-      <Stack direction="row">
-        {members.map((user) => (
+      <Stack direction="row" justifyContent="space-around" width="100%">
+        {[...members].slice(0, 3).map((user) => (
           <ActiveUserCard
             key={user.docId}
             iconUrl={user.iconUrl}
             userName={user.displayName}
             stateLabel={getStateLabel(user.session)}
+            cardColor={getStateColor(user.session)}
             timerText={getTimerText(timerInfoMap[user.docId] ?? null)}
             subjectLabel={''}
             subjectColor={''}
           />
         ))}
       </Stack>
+      <IconButton sx={{ position: 'absolute', top: 2, right: 2 }}>
+        <ArrowRight />
+      </IconButton>
     </ContainerCard>
   )
 }

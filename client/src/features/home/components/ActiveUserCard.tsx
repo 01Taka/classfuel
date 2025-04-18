@@ -7,6 +7,7 @@ interface ActiveUserCardProps {
   iconUrl: string
   userName: string
   stateLabel: string
+  cardColor: string
   timerText: string
   subjectLabel: string
   subjectColor: string
@@ -16,12 +17,13 @@ const ActiveUserCard: React.FC<ActiveUserCardProps> = ({
   iconUrl,
   userName,
   stateLabel,
+  cardColor,
   timerText,
   subjectLabel,
   subjectColor,
 }) => {
   return (
-    <ContainerCard>
+    <ContainerCard sx={{ maxWidth: '30vw', width: 105, bgcolor: cardColor }}>
       <IconWithLabel src={iconUrl} label={userName} />
       <Stack spacing={0.5} flexGrow={1}>
         <Typography variant="body2" color="text.secondary">
