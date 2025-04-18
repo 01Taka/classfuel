@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { TeamRepository } from '../../../firebase/firestore/repositories/teams/team-repository'
-import { UserJoinedTeamRepository } from '../../../firebase/firestore/repositories/users/user-joined-team-repository'
 import { handleJoinTeam } from '../../join-team/services/team-services'
 import { useCurrentUserStore } from '../../../stores/currentUserStore'
 import { TeamRead } from '../../../types/firebase/firestore-documents/teams/team-document'
@@ -9,8 +8,9 @@ import {
   isRogueFirestoreId,
 } from '../../../functions/team-code-utils'
 import { useJoinedTeamsStore } from '../../../stores/joinedTeamsStore'
+import { UserRepository } from '../../../firebase/firestore/repositories/users/user-repository'
 
-const userJoinedTeamRepo = new UserJoinedTeamRepository()
+const userRepo = new UserRepository()
 const teamRepo = new TeamRepository()
 
 export const useAppBarState = () => {
@@ -30,7 +30,7 @@ export const useAppBarState = () => {
   // チーム切替
   const changeTeam = async (teamId: string) => {
     if (!uid) return
-    await userJoinedTeamRepo.update({ activeTeamId: teamId }, uid)
+    await userRepo.update({ activeTeamId: teamId }, uid)
   }
 
   // 参加コード入力 or QRスキャン時
