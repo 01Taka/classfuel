@@ -1,78 +1,29 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import StudyTimer from './molecules/StudyTimer'
-import { useNavigate } from 'react-router-dom'
-import { useCurrentUserStore } from '../../../stores/currentUserStore'
-import useRemainingTime from '../hooks/useRemainingTime'
-import useSessionService from '../hooks/useSessionService'
 import BreakTimer from './molecules/BreakTimer'
+import { FormControlLabel, Checkbox } from '@mui/material'
+import Btn from '../../../components/atoms/Btn'
+import useSessionTimerController from '../hooks/useSessionTimerController'
 import {
   breakTimeChoices,
   studyTimeChoices,
 } from '../../../constants/session-time-constants'
-import Btn from '../../../components/atoms/Btn'
-import FinishSE from '../../../assets/sounds/timer.mp3'
 
-interface SessionTimerProps {}
-
-const SessionTimer: React.FC<SessionTimerProps> = ({}) => {
-  const navigate = useNavigate()
-  const { user } = useCurrentUserStore()
-  const session = user?.session ?? null
-
+const SessionTimer: React.FC = () => {
   const {
+    session,
+    remainingTime,
+    elapsedTime,
+    isRunning,
+    nextStudyTime,
+    setNextStudyTime,
+    isPlaySound,
+    handleFinish,
     handleStopSession,
     handleRestartSession,
-    handleFinishSession,
-    handleSwitchSession,
-  } = useSessionService()
-  const { remainingTime, elapsedTime } = useRemainingTime()
-
-  const [nextStudyTime, setNextStudyTime] = useState<number>(25 * 60 * 1000)
-
-  const [hasPlayedSE, setHasPlayedSE] = useState(false)
-  const [hasBreakStarted, setHasBreakStarted] = useState(false)
-
-  const playSE = () => {
-    const audio = new Audio(FinishSE)
-    audio.play()
-  }
-
-  useEffect(() => {
-    // breakに切り替わった瞬間だけで1回だけtrueに
-    if (session?.type === 'break' && !hasBreakStarted) {
-      setHasBreakStarted(true)
-    }
-  }, [session?.type])
-
-  useEffect(() => {
-    // breakが始まってから、残り時間がマイナスになったらstudyに切り替え
-    if (hasBreakStarted && remainingTime < 0) {
-      playSE()
-      handleSwitchSession('study', nextStudyTime)
-      setHasPlayedSE(false) // reset for next sound effect
-      setHasBreakStarted(false) // reset for next break
-    }
-  }, [hasBreakStarted, remainingTime])
-
-  const handleFinish = () => {
-    setHasPlayedSE(false)
-    setHasBreakStarted(false)
-    handleFinishSession()
-    navigate('/')
-  }
-
-  useEffect(() => {
-    if (remainingTime < 0 && session?.type === 'study' && !hasPlayedSE) {
-      playSE()
-      setHasPlayedSE(true)
-    }
-  }, [remainingTime, session?.type])
-
-  const handleBreak = (time: number) => {
-    handleSwitchSession('break', time)
-  }
-
-  const isRunning = session?.status === 'running'
+    handleBreak,
+    handleToggleSound,
+  } = useSessionTimerController()
 
   return (
     <div>
@@ -95,6 +46,7 @@ const SessionTimer: React.FC<SessionTimerProps> = ({}) => {
           setNextStudyTime={setNextStudyTime}
         />
       )}
+
       <Btn
         variant="text"
         onClick={handleFinish}
@@ -102,6 +54,17 @@ const SessionTimer: React.FC<SessionTimerProps> = ({}) => {
       >
         <span>終了</span>
       </Btn>
+
+      <FormControlLabel
+        sx={{ position: 'fixed', top: 5, left: 10 }}
+        control={
+          <Checkbox
+            checked={isPlaySound}
+            onChange={(e) => handleToggleSound(e)}
+          />
+        }
+        label="アラームを鳴らす"
+      />
     </div>
   )
 }

@@ -1,46 +1,57 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { convertToMilliseconds } from '../../../functions/dateTime-utils/time-conversion'
 import { useCurrentUserStore } from '../../../stores/currentUserStore'
 
 const useRemainingTime = () => {
   const { user } = useCurrentUserStore()
-  const [diffTime, setDiffTime] = useState<number>(0)
+  const session = user?.session
+  const [diffTime, setDiffTime] = useState(0)
+  const remainingTimeRef = useRef<number>(Infinity)
 
+  // 残り時間を計算
+  const calcRemainingTime = (): number => {
+    if (!session) return 0
+
+    if (session.status === 'running') {
+      return diffTime
+    } else {
+      const stoppedAt = convertToMilliseconds(session.stoppedAt || 0)
+      const expectedEndAt = convertToMilliseconds(session.expectedEndAt || 0)
+      return expectedEndAt - stoppedAt
+    }
+  }
+
+  const remainingTime = calcRemainingTime()
+  remainingTimeRef.current = remainingTime
+
+  // 経過時間を計算
+  const elapsedTime = (session?.expectedDuration ?? 0) - remainingTime
+
+  // インターバルで diffTime を更新
   useEffect(() => {
-    const endTimestamp = user?.session?.expectedEndAt
+    const endTimestamp = session?.expectedEndAt
     if (!endTimestamp) return
 
     const endTimeMs = convertToMilliseconds(endTimestamp)
 
     const updateRemainingTime = () => {
       const now = Date.now()
-      setDiffTime(endTimeMs - now)
+      const diff = endTimeMs - now
+      setDiffTime(diff)
+      remainingTimeRef.current = diff
     }
 
     updateRemainingTime()
     const interval = setInterval(updateRemainingTime, 1000)
 
     return () => clearInterval(interval)
-  }, [user?.session?.expectedEndAt])
+  }, [session?.expectedEndAt])
 
-  const remainingTime = useMemo(() => {
-    if (user?.session?.status === 'running') {
-      return diffTime
-    } else {
-      const stoppedAt = convertToMilliseconds(user?.session?.stoppedAt || 0)
-      const expectedEndAt = convertToMilliseconds(
-        user?.session?.expectedEndAt || 0
-      )
-      return expectedEndAt - stoppedAt
-    }
-  }, [diffTime, user?.session])
-
-  const elapsedTime = useMemo(
-    () => (user?.session?.expectedDuration ?? 0) - remainingTime,
-    [user?.session?.expectedDuration, remainingTime]
-  )
-
-  return { remainingTime, elapsedTime }
+  return {
+    remainingTime,
+    elapsedTime,
+    remainingTimeRef,
+  }
 }
 
 export default useRemainingTime
