@@ -4,18 +4,13 @@ import { useAuthState } from 'react-firebase-hooks/auth'
 import { getAuth } from 'firebase/auth'
 import { UserRepository } from '../../firebase/firestore/repositories/users/user-repository'
 import { useCurrentUserStore } from '../../stores/currentUserStore'
-import { UserJoinedTeamRepository } from '../../firebase/firestore/repositories/users/user-joined-team-repository'
-import { useJoinedTeamsStore } from '../../stores/joinedTeamsStore'
 
 const userRepo = new UserRepository()
-const userJoinedTeamsRepo = new UserJoinedTeamRepository()
 
 const useInitUser = () => {
   const auth = getAuth()
   const [firebaseUser, loading, error] = useAuthState(auth)
   const { setUid, setUser, setLoading, setError } = useCurrentUserStore()
-
-  const { setJoinedTeams } = useJoinedTeamsStore()
 
   const uid = useMemo(() => firebaseUser?.uid ?? null, [firebaseUser])
 
@@ -24,9 +19,6 @@ const useInitUser = () => {
     try {
       const userData = await userRepo.read(uid)
       setUser(userData)
-
-      const teams = await userJoinedTeamsRepo.getAll([uid])
-      setJoinedTeams(teams)
     } catch (err) {
       setError(err as Error)
     }
@@ -45,18 +37,7 @@ const useInitUser = () => {
     }, uid)
 
     return () => unsubscribe()
-  }, [uid, loading, error, fetchUser, setUid, setLoading, setError, setUser])
-
-  useEffect(() => {
-    if (!uid) return
-    const { unsubscribe } = userJoinedTeamsRepo.addReadCollectionCallback(
-      (teams) => {
-        setJoinedTeams(teams)
-      },
-      [uid]
-    )
-    return () => unsubscribe()
-  }, [uid])
+  }, [uid, fetchUser, setUid, setLoading, setError, setUser])
 }
 
 export default useInitUser

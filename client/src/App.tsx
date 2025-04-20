@@ -7,6 +7,7 @@ import useInit from './hooks/init/useInit'
 import UserSetupPage from './components/pages/UserSetupPage'
 import LoginPage from './components/pages/LoginPage'
 import JoinTeamPage from './components/pages/JoinTeamPage'
+import RankingPage from './components/pages/RankingPage'
 
 function App() {
   useInit()
@@ -18,6 +19,7 @@ function App() {
       <Route path="/session" element={<Session />} />
       <Route path="join-team/:code" element={<JoinTeamPage />} />
       <Route path="*" element={<NotFound />} />
+      <Route path="/ranking" element={<RankingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/user-setup" element={<UserSetupPage />} />
     </Routes>

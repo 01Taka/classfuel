@@ -27,7 +27,7 @@ interface PopupProps {
     | 'space-around'
     | 'space-evenly'
   spacing?: number
-  onClose?: () => void
+  onClose?: (state: false) => void
 }
 
 const Popup: FC<PopupProps> = ({
@@ -80,7 +80,7 @@ const Popup: FC<PopupProps> = ({
         {children}
         {onClose && (
           <IconButton
-            onClick={onClose}
+            onClick={() => onClose(false)}
             size="large"
             color="warning"
             sx={{

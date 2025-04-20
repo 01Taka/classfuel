@@ -2,18 +2,21 @@ import React, { useMemo } from 'react'
 import ActiveUserCard from './ActiveUserCard'
 import { IconButton, Stack, Typography } from '@mui/material'
 import ContainerCard from '../../../components/atoms/ContainerCard'
-import useActiveTeamMembers from '../hooks/useActiveTeamMembers'
 import useSessionsElapsedTime, {
   SessionTimerInfo,
 } from '../hooks/useSessionsElapsedTime'
 import { MINUTES_IN_MILLISECOND } from '../../../constants/datetime-constants'
 import useTeamMemberState from '../hooks/useTeamMemberState'
 import { ArrowRight } from '@mui/icons-material'
+import { useActiveTeamMembersStore } from '../../../stores/activeTeamMembersStore'
+import { sortTeamMembers } from '../services/sort-team-members'
 
 interface ActiveUserPanelProps {}
 
 const ActiveUserPanel: React.FC<ActiveUserPanelProps> = ({}) => {
-  const { members } = useActiveTeamMembers()
+  const { members: storeMembers } = useActiveTeamMembersStore()
+  const members = useMemo(() => sortTeamMembers(storeMembers), [storeMembers])
+
   const { getStateLabel, getStateColor } = useTeamMemberState()
 
   // メンバーから自分自身を抜く処理を追加
