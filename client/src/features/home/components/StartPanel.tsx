@@ -3,11 +3,11 @@ import SwitchButton from '../../../components/atoms/SwitchButton'
 import StartButton from '../../../components/atoms/StartButton'
 import ContainerCard from '../../../components/atoms/ContainerCard'
 import { useNavigate } from 'react-router-dom'
-import useSessionService from '../../session/hooks/useSessionService'
 import {
   breakTimeChoices,
   studyTimeChoices,
 } from '../../../constants/session-time-constants'
+import useSessionService from '../../../hooks/services/useSessionService'
 
 interface StartPanelProps {}
 
@@ -25,12 +25,12 @@ const startButtonSettings = {
 }
 
 const StartPanel: React.FC<StartPanelProps> = ({}) => {
-  const { handleStartSession } = useSessionService()
   const [mode, setMode] = React.useState<'study' | 'break'>('study')
+  const { onStartSession } = useSessionService()
   const navigate = useNavigate()
 
   const handleStart = (mode: 'study' | 'break', duration: number) => {
-    handleStartSession(mode, duration)
+    onStartSession(mode, duration)
     navigate('/session')
   }
 

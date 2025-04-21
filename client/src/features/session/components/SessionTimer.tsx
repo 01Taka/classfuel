@@ -19,8 +19,8 @@ const SessionTimer: React.FC = () => {
     setNextStudyTime,
     isPlaySound,
     handleFinish,
-    handleStopSession,
-    handleRestartSession,
+    onStopSession,
+    onRestartSession,
     handleBreak,
     handleToggleSound,
   } = useSessionTimerController()
@@ -33,8 +33,8 @@ const SessionTimer: React.FC = () => {
           elapsedTime={elapsedTime}
           isRunning={isRunning}
           breakTimeChoices={[...breakTimeChoices]}
-          onStop={handleStopSession}
-          onRestart={handleRestartSession}
+          onStop={onStopSession}
+          onRestart={onRestartSession}
           onFinish={handleFinish}
           onBreak={handleBreak}
         />

@@ -3,20 +3,16 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCurrentUserStore } from '../../../stores/currentUserStore'
 import useRemainingTime from '../hooks/useRemainingTime'
-import useSessionService from '../hooks/useSessionService'
 import FinishSE from '../../../assets/sounds/timer.mp3'
+import useSessionService from '../../../hooks/services/useSessionService'
 
 const useSessionTimerController = () => {
   const navigate = useNavigate()
   const { user } = useCurrentUserStore()
   const session = user?.session ?? null
 
-  const {
-    handleStopSession,
-    handleRestartSession,
-    handleFinishSession,
-    handleSwitchSession,
-  } = useSessionService()
+  const { onStopSession, onRestartSession, onFinishSession, onSwitchSession } =
+    useSessionService()
   const { remainingTime, elapsedTime, remainingTimeRef } = useRemainingTime()
 
   const [nextStudyTime, setNextStudyTime] = useState<number>(25 * 60 * 1000)
@@ -59,13 +55,13 @@ const useSessionTimerController = () => {
 
   const handleFinish = () => {
     setHasBreakStarted(false)
-    handleFinishSession()
+    onFinishSession()
     stopSoundInterval()
     navigate('/')
   }
 
   const handleBreak = (time: number) => {
-    handleSwitchSession('break', time)
+    onSwitchSession('break', time)
   }
 
   useEffect(() => {
@@ -76,7 +72,7 @@ const useSessionTimerController = () => {
 
   useEffect(() => {
     if (hasBreakStarted && remainingTime < 0) {
-      handleSwitchSession('study', nextStudyTime)
+      onSwitchSession('study', nextStudyTime)
       setHasBreakStarted(false)
     }
   }, [hasBreakStarted, remainingTime])
@@ -91,11 +87,10 @@ const useSessionTimerController = () => {
     nextStudyTime,
     setNextStudyTime,
     isPlaySound,
+    onStopSession,
+    onRestartSession,
     setIsPlaySound,
     handleFinish,
-    handleStopSession,
-    handleRestartSession,
-    handleSwitchSession,
     handleBreak,
     handleToggleSound,
   }
