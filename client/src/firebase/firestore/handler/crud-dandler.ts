@@ -5,7 +5,6 @@ import {
   QuerySnapshot,
   addDoc,
   deleteDoc,
-  doc,
   getDoc,
   getDocs,
   updateDoc,
@@ -69,16 +68,13 @@ export class CRUDHandler {
    * @param merge 既存ドキュメントへのマージフラグ（デフォルト false）
    */
   public static async createWithId(
-    collectionRef: CollectionReference,
-    documentId: string,
+    docRef: DocumentReference,
     data: BaseDocument,
     options: SetOptions = {}
   ): Promise<void> {
-    const docRef = doc(collectionRef, documentId)
     await this.handleFirestoreOperation(
       setDoc(docRef, data, options),
-      'Failed to create document with ID',
-      documentId
+      'Failed to create document with ID'
     )
   }
 
@@ -88,14 +84,11 @@ export class CRUDHandler {
    * @param documentId 読み込むドキュメントのID
    */
   public static async readAsDocumentSnapshot<Read extends BaseDocumentRead>(
-    collectionRef: CollectionReference<Read>,
-    documentId: string
+    docRef: DocumentReference<Read>
   ): Promise<DocumentSnapshot<Read>> {
-    const docRef = doc(collectionRef, documentId)
     return this.handleFirestoreOperation(
       getDoc(docRef),
-      'Failed to read document snapshot',
-      documentId
+      'Failed to read document snapshot'
     )
   }
 
@@ -105,12 +98,10 @@ export class CRUDHandler {
    * @param documentId 読み込むドキュメントのID
    */
   public static async read<Read extends BaseDocumentRead>(
-    collectionRef: CollectionReference,
-    documentId: string
+    docRef: DocumentReference
   ): Promise<Read | null> {
     const docSnapshot = await this.readAsDocumentSnapshot(
-      collectionRef as CollectionReference<Read>,
-      documentId
+      docRef as DocumentReference<Read>
     )
     return parseDocumentSnapshot<Read>(docSnapshot)
   }
@@ -122,15 +113,12 @@ export class CRUDHandler {
    * @param data 更新する部分的なデータ
    */
   public static async update(
-    collectionRef: CollectionReference,
-    documentId: string,
+    docRef: DocumentReference,
     data: BaseDocument
   ): Promise<void> {
-    const docRef = doc(collectionRef, documentId)
     await this.handleFirestoreOperation(
       updateDoc(docRef, data),
-      'Failed to update document',
-      documentId
+      'Failed to update document'
     )
   }
 
@@ -139,15 +127,10 @@ export class CRUDHandler {
    * @param collectionRef 対象の CollectionReference
    * @param documentId 削除するドキュメントのID
    */
-  public static async delete(
-    collectionRef: CollectionReference,
-    documentId: string
-  ): Promise<void> {
-    const docRef = doc(collectionRef, documentId)
+  public static async delete(docRef: DocumentReference): Promise<void> {
     await this.handleFirestoreOperation(
       deleteDoc(docRef),
-      'Failed to hard delete document',
-      documentId
+      'Failed to hard delete document'
     )
   }
 

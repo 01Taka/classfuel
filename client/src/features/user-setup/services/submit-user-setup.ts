@@ -22,7 +22,7 @@ export const submitUserSetup = async (
     activeTeamId: null,
   }
 
-  await userRepo.createWithId(userInfo, uid)
+  await userRepo.createWithId(userInfo, [uid])
 
   if (teamCode) {
     await handleJoinTeam(

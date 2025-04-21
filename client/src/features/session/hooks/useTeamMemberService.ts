@@ -24,7 +24,7 @@ const userTeamMemberService = () => {
     const batchManager = new BatchManager(db)
     await batchManager.runInBatch(() => {
       teamIds.forEach((teamId) => {
-        teamMemberRepo.update({ todayStudyTime }, uid, [teamId])
+        teamMemberRepo.update({ todayStudyTime }, [teamId, uid])
       })
     }, [teamMemberRepo])
   }
@@ -34,7 +34,7 @@ const userTeamMemberService = () => {
     const batchManager = new BatchManager(db)
     await batchManager.runInBatch(() => {
       teamIds.forEach((teamId) => {
-        teamMemberRepo.update({ session }, uid, [teamId])
+        teamMemberRepo.update({ session }, [teamId, uid])
       })
     }, [teamMemberRepo])
   }

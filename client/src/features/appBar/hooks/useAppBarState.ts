@@ -22,7 +22,7 @@ export const useAppBarState = () => {
 
   useEffect(() => {
     if (!joinedTeams || joinedTeams.length === 0) return
-    Promise.all(joinedTeams.map((team) => teamRepo.read(team.docId))).then(
+    Promise.all(joinedTeams.map((team) => teamRepo.read([team.docId]))).then(
       (res) => setTeams(res.filter(Boolean) as TeamRead[])
     )
   }, [joinedTeams])
@@ -30,7 +30,7 @@ export const useAppBarState = () => {
   // チーム切替
   const changeTeam = async (teamId: string) => {
     if (!uid) return
-    await userRepo.update({ activeTeamId: teamId }, uid)
+    await userRepo.update({ activeTeamId: teamId }, [uid])
   }
 
   // 参加コード入力 or QRスキャン時

@@ -1,6 +1,5 @@
 import {
-  CollectionReference,
-  doc,
+  DocumentReference,
   DocumentSnapshot,
   Transaction,
 } from 'firebase/firestore'
@@ -20,11 +19,9 @@ function handleFirestoreError(error: unknown, operation: string): never {
 class TransactionHandler {
   static async get<T extends BaseDocumentRead>(
     transaction: Transaction,
-    collectionRef: CollectionReference,
-    documentId: string
+    docRef: DocumentReference
   ): Promise<DocumentSnapshot<T>> {
     try {
-      const docRef = doc(collectionRef, documentId)
       const result = await transaction.get(docRef)
       return result as DocumentSnapshot<T>
     } catch (error) {
@@ -35,13 +32,9 @@ class TransactionHandler {
   static set(
     transaction: Transaction,
     data: BaseDocumentWrite,
-    collectionRef: CollectionReference,
-    documentId: string | null
+    docRef: DocumentReference
   ): void {
     try {
-      const docRef = documentId
-        ? doc(collectionRef, documentId)
-        : doc(collectionRef)
       transaction.set(docRef, data)
     } catch (error) {
       handleFirestoreError(error, 'set')
@@ -51,24 +44,17 @@ class TransactionHandler {
   static update(
     transaction: Transaction,
     data: Partial<BaseDocumentWrite>,
-    collectionRef: CollectionReference,
-    documentId: string
+    docRef: DocumentReference
   ): void {
     try {
-      const docRef = doc(collectionRef, documentId)
       transaction.update(docRef, data as BaseDocumentWrite)
     } catch (error) {
       handleFirestoreError(error, 'update')
     }
   }
 
-  static delete(
-    transaction: Transaction,
-    collectionRef: CollectionReference,
-    documentId: string
-  ): void {
+  static delete(transaction: Transaction, docRef: DocumentReference): void {
     try {
-      const docRef = doc(collectionRef, documentId)
       transaction.delete(docRef)
     } catch (error) {
       handleFirestoreError(error, 'delete')

@@ -1,76 +1,76 @@
 import {
   Firestore,
-  CollectionReference,
   collection,
+  doc,
+  CollectionReference,
+  DocumentReference,
   DocumentData,
 } from 'firebase/firestore'
 
 class CollectionManager {
-  // キャッシュした CollectionReference を管理する
-  private cachedCollections: Record<string, CollectionReference<DocumentData>> =
-    {}
-
-  constructor(private firestore: Firestore) {}
-
   /**
-   * キャッシュに存在すれば返し、なければ新たに作成してキャッシュする
+   * コレクション名とドキュメントIDから CollectionReference または DocumentReference を取得
+   * @param firestore - Firestore インスタンス
+   * @param collectionNames - コレクション名（単一 or 複数）
+   * @param collectionPath - 各コレクション間に挟むドキュメントID
+   * @param refType - 'collection' ならコレクション参照、'doc' ならドキュメント参照を返す
    */
-  private getOrCreateCollection(
-    path: string
-  ): CollectionReference<DocumentData> {
-    return (this.cachedCollections[path] ??= collection(this.firestore, path))
-  }
+  static getReference(
+    firestore: Firestore,
+    collectionNames: string | string[],
+    collectionPath: string[],
+    refType: 'collection' | 'doc'
+  ): CollectionReference<DocumentData> | DocumentReference<DocumentData> {
+    const collections = Array.isArray(collectionNames)
+      ? collectionNames
+      : [collectionNames]
+    const includeDocumentsId = refType === 'doc'
 
-  /**
-   * コレクション名と間に挟むドキュメントIDの配列からコレクションパスを合成し、
-   * CollectionReference を取得する
-   * @param collectionPath - コレクション名またはその配列（例: "users" または ["users", "posts"]）
-   * @param documentIds - ドキュメントIDの配列（コレクション間に挟む）
-   *                     例: ["userId"] なら "users/userId/posts" のように合成
-   */
-  public getCollectionRef(
-    collectionPath: string | string[],
-    documentIds: string[] = []
-  ): CollectionReference<DocumentData> {
-    const collections = Array.isArray(collectionPath)
-      ? collectionPath
-      : [collectionPath]
-    const composedPath = CollectionManager.composeCollectionPath(
+    const path = this.composePath(
       collections,
-      documentIds
+      collectionPath,
+      includeDocumentsId
     )
-    return this.getOrCreateCollection(composedPath)
+
+    return refType === 'collection'
+      ? collection(firestore, path)
+      : doc(firestore, path)
   }
 
   /**
-   * コレクション名の配列とドキュメントIDの配列を使い、
-   * Firestore のパス（文字列）を合成する
-   *
-   * 例:
-   *  collectionNames = ['users', 'posts']
-   *  documentIds = ['userId']
-   *  -> "users/userId/posts"
-   *
-   * @throws ドキュメントIDの数がコレクション名の数-1と一致しない場合
+   * コレクションとドキュメントIDの配列を合成してパスを作成
+   * @param collectionNames - 例: ['users', 'posts']
+   * @param collectionPath - 例: ['userId', 'postId']
+   * @param includeDocumentsId - 最後にドキュメントIDを含めるか
    */
-  public static composeCollectionPath(
+  static composePath(
     collectionNames: string[],
-    documentIds: string[]
+    collectionPath: string[],
+    includeDocumentsId: boolean
   ): string {
-    if (documentIds.length !== collectionNames.length - 1) {
+    const expectedDocCount =
+      collectionNames.length - (includeDocumentsId ? 0 : 1)
+
+    if (collectionPath.length !== expectedDocCount) {
       throw new Error(
-        `The number of provided document IDs (${documentIds.length}) does not match the expected number (${collectionNames.length - 1}).`
+        `Expected ${expectedDocCount} document IDs, but got ${collectionPath.length}.`
       )
     }
 
-    const pathParts: string[] = []
-    collectionNames.forEach((collectionName, index) => {
-      if (index > 0) {
-        pathParts.push(documentIds[index - 1])
+    const parts: string[] = []
+
+    collectionNames.forEach((col, i) => {
+      if (i > 0) {
+        parts.push(collectionPath[i - 1])
       }
-      pathParts.push(collectionName)
+      parts.push(col)
     })
-    return pathParts.join('/')
+
+    if (includeDocumentsId) {
+      parts.push(collectionPath[collectionPath.length - 1])
+    }
+
+    return parts.join('/')
   }
 }
 

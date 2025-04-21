@@ -14,7 +14,7 @@ const useUserService = () => {
     const cached = users[userId]
     if (cached) return cached
 
-    const user = await userRepo.read(userId)
+    const user = await userRepo.read([userId])
     if (!user) return null
 
     setUser(user)
@@ -48,7 +48,7 @@ const useUserService = () => {
 
     // 未キャッシュのユーザーを一括取得（必要なら一括取得APIに変更も可）
     const fetchedUsers = await Promise.all(
-      uncachedIds.map((id) => userRepo.read(id))
+      uncachedIds.map((id) => userRepo.read([id]))
     )
     fetchedUsers.forEach((user) => {
       if (user) {

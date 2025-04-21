@@ -31,23 +31,23 @@ export const handleCreateTeam = async (
           name: teamName,
           codeId: '',
         },
-        teamId
+        [teamId]
       )
 
       const teamCode = teamCodeRepo.getDocumentRefWithAutoId().id
 
-      teamCodeRepo.setInTransaction({ teamId: teamId }, teamCode)
+      teamCodeRepo.setInTransaction({ teamId: teamId }, [teamCode])
 
-      teamRepo.updateInTransaction({ codeId: teamCode }, teamId)
+      teamRepo.updateInTransaction({ codeId: teamCode }, [teamId])
 
-      userJoinedTeamRepo.setInTransaction({ name: teamName }, teamId, [
+      userJoinedTeamRepo.setInTransaction({ name: teamName }, [
         user.docId,
+        teamId,
       ])
 
       teamMemberRepo.setInTransaction(
         { ...user, iconUrl: '', todayStudyTime },
-        user.docId,
-        [teamId]
+        [teamId, user.docId]
       )
     }, [teamRepo, userJoinedTeamRepo, teamMemberRepo, teamCodeRepo])
   } catch (error) {
@@ -71,34 +71,36 @@ export const handleJoinTeam = async (
 
   try {
     await transactionManager.runInTransaction(async () => {
-      const teamCode = await teamCodeRepo.getInTransaction(teamCodeId)
+      const teamCode = await teamCodeRepo.getInTransaction([teamCodeId])
       if (!teamCode?.teamId) {
         throw new Error('Invalid team code: team ID not found.')
       }
 
-      const team = await teamRepo.getInTransaction(teamCode.teamId)
+      const team = await teamRepo.getInTransaction([teamCode.teamId])
       if (!team) {
         throw new Error(`Team not found for ID: ${teamCode.teamId}`)
       }
 
-      const isAlreadyMember = await teamMemberRepo.getInTransaction(
+      const isAlreadyMember = await teamMemberRepo.getInTransaction([
+        team.docId,
         user.docId,
-        [team.docId]
-      )
+      ])
       if (isAlreadyMember) {
         throw new Error('User is already a member of this team.')
       }
 
-      userJoinedTeamRepo.setInTransaction({ name: team.name }, team.docId, [
+      userJoinedTeamRepo.setInTransaction({ name: team.name }, [
         user.docId,
-      ])
-
-      teamMemberRepo.setInTransaction({ ...user, iconUrl: '' }, user.docId, [
         team.docId,
       ])
 
+      teamMemberRepo.setInTransaction({ ...user, iconUrl: '' }, [
+        team.docId,
+        user.docId,
+      ])
+
       if (setAsActiveTeam) {
-        userRepo.updateInBatch({ activeTeamId: team.docId }, user.docId)
+        userRepo.updateInBatch({ activeTeamId: team.docId }, [user.docId])
       }
     }, [teamRepo, userJoinedTeamRepo, teamMemberRepo, teamCodeRepo, userRepo])
   } catch (error) {
@@ -110,16 +112,16 @@ export const handleJoinTeam = async (
 export const handleFetchTeamByCode = async (
   code: string
 ): Promise<TeamRead | null> => {
-  const teamCode = await teamCodeRepo.read(code)
+  const teamCode = await teamCodeRepo.read([code])
 
   if (!teamCode) {
     console.error(`Team code not found for code: ${code}`)
     return null
   }
-  const team = await teamRepo.read(teamCode.teamId)
+  const team = await teamRepo.read([teamCode.teamId])
   return team
 }
 
 export const getTeamMemberData = async (userId: string, teamId: string) => {
-  return await teamMemberRepo.read(userId, [teamId])
+  return await teamMemberRepo.read([teamId, userId])
 }

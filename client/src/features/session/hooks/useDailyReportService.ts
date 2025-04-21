@@ -37,11 +37,10 @@ const useDailyReportService = () => {
         uid,
       ])
     } else {
-      await dailyReportRepo.update(
-        { studyTime: todayStudyTime },
+      await dailyReportRepo.update({ studyTime: todayStudyTime }, [
+        uid,
         todayReport.docId,
-        [uid]
-      )
+      ])
     }
     if (todayStudyTime) {
       await updateTodayStudyTimeAtMember(todayStudyTime)

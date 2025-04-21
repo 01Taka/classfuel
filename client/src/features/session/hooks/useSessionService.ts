@@ -18,7 +18,7 @@ const useSessionService = () => {
 
   const updateSession = async (updatedSession: UserSession | null) => {
     if (!uid) return
-    await userRepo.update({ session: updatedSession }, uid)
+    await userRepo.update({ session: updatedSession }, [uid])
     await updateSessionInMember(updatedSession)
   }
 

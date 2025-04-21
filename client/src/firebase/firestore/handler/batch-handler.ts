@@ -1,4 +1,4 @@
-import { CollectionReference, doc, WriteBatch } from 'firebase/firestore'
+import { DocumentReference, WriteBatch } from 'firebase/firestore'
 import { BaseDocumentWrite } from '../../../types/firebase/firestore-document-types'
 
 function handleFirestoreError(error: unknown, operation: string): never {
@@ -12,13 +12,9 @@ class BatchHandler {
   static set(
     batch: WriteBatch,
     data: BaseDocumentWrite,
-    collectionRef: CollectionReference,
-    documentId: string | null
+    docRef: DocumentReference
   ): void {
     try {
-      const docRef = documentId
-        ? doc(collectionRef, documentId)
-        : doc(collectionRef)
       batch.set(docRef, data)
     } catch (error) {
       handleFirestoreError(error, 'set')
@@ -28,24 +24,17 @@ class BatchHandler {
   static update(
     batch: WriteBatch,
     data: Partial<BaseDocumentWrite>,
-    collectionRef: CollectionReference,
-    documentId: string
+    docRef: DocumentReference
   ): void {
     try {
-      const docRef = doc(collectionRef, documentId)
       batch.update(docRef, data as BaseDocumentWrite)
     } catch (error) {
       handleFirestoreError(error, 'update')
     }
   }
 
-  static delete(
-    batch: WriteBatch,
-    collectionRef: CollectionReference,
-    documentId: string
-  ): void {
+  static delete(batch: WriteBatch, docRef: DocumentReference): void {
     try {
-      const docRef = doc(collectionRef, documentId)
       batch.delete(docRef)
     } catch (error) {
       handleFirestoreError(error, 'delete')

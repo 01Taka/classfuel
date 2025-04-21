@@ -1,10 +1,10 @@
 import {
   DocumentSnapshot,
-  QuerySnapshot,
-  doc,
   onSnapshot,
   CollectionReference,
   Unsubscribe,
+  DocumentReference,
+  QuerySnapshot,
 } from 'firebase/firestore'
 import { nanoid } from 'nanoid'
 import { BaseDocumentRead } from '../../../types/firebase/firestore-document-types'
@@ -35,11 +35,9 @@ export class CallbacksHandler<Read extends BaseDocumentRead> {
    * @param documentId 対象のドキュメントID
    */
   private createDocumentCallbackEntry(
-    collectionRef: CollectionReference<Read>,
-    documentId: string
+    docRef: DocumentReference<Read>
   ): Callback<Read> {
-    const key = `${collectionRef.path}/${documentId}`
-    const docRef = doc(collectionRef, documentId)
+    const key = `${docRef.path}`
     const unsubscribe = onSnapshot(docRef, (docSnapshot) => {
       this.callbacks.get(key)?.func.forEach((cb) => cb(docSnapshot))
     })
@@ -58,17 +56,15 @@ export class CallbacksHandler<Read extends BaseDocumentRead> {
    * @returns 使用したコールバックID
    */
   addCallback(
-    collectionRef: CollectionReference<Read>,
-    documentId: string,
+    docRef: DocumentReference<Read>,
     callback: (snapshot: DocumentSnapshot<Read>) => void,
     callbackId?: string,
     overwrite = false
   ): { callbackId: string; unsubscribe: Unsubscribe } {
-    const key = `${collectionRef.path}/${documentId}`
+    const key = `${docRef.path}`
     const cbId = callbackId ?? nanoid()
     let callbackEntry =
-      this.callbacks.get(key) ||
-      this.createDocumentCallbackEntry(collectionRef, documentId)
+      this.callbacks.get(key) || this.createDocumentCallbackEntry(docRef)
 
     if (overwrite) {
       callbackEntry.func.set(cbId, callback)
@@ -90,12 +86,8 @@ export class CallbacksHandler<Read extends BaseDocumentRead> {
    * @param documentId ドキュメントID
    * @param callbackId 削除するコールバックID
    */
-  removeCallback(
-    collectionRef: CollectionReference<Read>,
-    documentId: string,
-    callbackId: string
-  ): void {
-    const key = `${collectionRef.path}/${documentId}`
+  removeCallback(docRef: DocumentReference<Read>, callbackId: string): void {
+    const key = `${docRef.path}`
     const callbackEntry = this.callbacks.get(key)
     if (callbackEntry) {
       callbackEntry.func.delete(callbackId)
@@ -124,8 +116,8 @@ export class CallbacksHandler<Read extends BaseDocumentRead> {
     let colCallback = this.collectionCallbacks.get(key)
 
     if (!colCallback) {
-      const unsubscribe = onSnapshot(collectionRef, (querySnapshot) => {
-        colCallback!.func.forEach((cb) => cb(querySnapshot))
+      const unsubscribe = onSnapshot(collectionRef, (docSnapshot) => {
+        colCallback!.func.forEach((cb) => cb(docSnapshot))
       })
       colCallback = { func: new Map(), unsubscribe }
       this.collectionCallbacks.set(key, colCallback)

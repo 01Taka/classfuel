@@ -33,14 +33,11 @@ abstract class FirestoreService<
   Document extends BaseDocument = Write,
 > {
   private _callbacksHandler?: CallbacksHandler<Read>
-  private _collectionManager: CollectionManager
 
   constructor(
-    firestore: Firestore,
+    private firestore: Firestore,
     private collectionPathComposition: string | string[]
-  ) {
-    this._collectionManager = new CollectionManager(firestore)
-  }
+  ) {}
 
   // ======================================================================
   // Abstract Methods
@@ -117,21 +114,32 @@ abstract class FirestoreService<
   // ======================================================================
 
   /**
-   * parentDocumentIds は、コレクション間に挟む親ドキュメントIDの配列です。
-   * @param parentDocumentIds
-   * @returns 対象コレクションの参照
+   * コレクションまたはドキュメントを動的に取得。
+   * @param path コレクション間に挟む親ドキュメントIDの配列
+   * @param refType trueでDocumentRefを返す
    */
-  public getCollectionRef(
-    parentDocumentIds: string[] = []
-  ): CollectionReference<DocumentData> {
-    return this._collectionManager.getCollectionRef(
+  public getReference(
+    path: string[],
+    refType: 'collection'
+  ): CollectionReference<DocumentData>
+  public getReference(
+    path: string[],
+    refType: 'doc'
+  ): DocumentReference<DocumentData>
+  public getReference(
+    path: string[],
+    refType: 'doc' | 'collection'
+  ): CollectionReference<DocumentData> | DocumentReference<DocumentData> {
+    return CollectionManager.getReference(
+      this.firestore,
       this.collectionPathComposition,
-      parentDocumentIds
+      path ?? [],
+      refType
     )
   }
 
-  public getDocumentRefWithAutoId(parentDocumentIds: string[] = []) {
-    return doc(this.getCollectionRef(parentDocumentIds))
+  public getDocumentRefWithAutoId(collectionPath: string[] = []) {
+    return doc(this.getReference(collectionPath, 'collection'))
   }
 
   // ======================================================================
@@ -151,10 +159,10 @@ abstract class FirestoreService<
 
   async create(
     data: Write,
-    parentDocumentIds: string[] = []
+    collectionPath: string[] = []
   ): Promise<DocumentReference<Document>> {
     console.log('called create')
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
+    const collectionRef = this.getReference(collectionPath, 'collection')
     return await CRUDHandler.create<Document>(
       collectionRef,
       this.organizeCreateData(data)
@@ -163,87 +171,76 @@ abstract class FirestoreService<
 
   async createWithId(
     data: Write,
-    documentId: string,
-    parentDocumentIds: string[] = [],
+    documentPath: string[],
     options?: SetOptions
-  ): Promise<CollectionReference<DocumentData, DocumentData>> {
+  ): Promise<DocumentReference<DocumentData, DocumentData>> {
     console.log('called createWithId')
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
+    const docRef = this.getReference(documentPath, 'doc')
     await CRUDHandler.createWithId(
-      collectionRef,
-      documentId,
+      docRef,
       this.organizeCreateData(data),
       options
     )
-    return collectionRef
+    return docRef
   }
 
   protected async readAsDocumentSnapshot(
-    documentId: string,
-    parentDocumentIds: string[] = []
+    documentPath: string[]
   ): Promise<DocumentSnapshot<Read>> {
-    const collectionRef = this.getCollectionRef(
-      parentDocumentIds
-    ) as CollectionReference<Read>
-    return CRUDHandler.readAsDocumentSnapshot<Read>(collectionRef, documentId)
+    const docRef = this.getReference(
+      documentPath,
+      'doc'
+    ) as DocumentReference<Read>
+    return CRUDHandler.readAsDocumentSnapshot<Read>(docRef)
   }
 
-  async read(
-    documentId: string,
-    parentDocumentIds: string[] = []
-  ): Promise<Read | null> {
-    console.log('called read')
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
-    return CRUDHandler.read<Read>(collectionRef, documentId)
+  async read(documentPath: string[]): Promise<Read | null> {
+    console.error('called read')
+    const collectionRef = this.getReference(documentPath, 'doc')
+    return CRUDHandler.read<Read>(collectionRef)
   }
 
   async update(
     data: Partial<Write>,
-    documentId: string,
-    parentDocumentIds: string[] = []
-  ): Promise<CollectionReference<DocumentData, DocumentData>> {
+    documentPath: string[]
+  ): Promise<DocumentReference<DocumentData, DocumentData>> {
     console.log('called update')
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
-    CRUDHandler.update(collectionRef, documentId, this.organizeUpdateData(data))
-    return collectionRef
+    const docRef = this.getReference(documentPath, 'doc')
+    CRUDHandler.update(docRef, this.organizeUpdateData(data))
+    return docRef
   }
 
   async hardDelete(
-    documentId: string,
-    parentDocumentIds: string[] = []
-  ): Promise<CollectionReference<DocumentData, DocumentData>> {
+    documentPath: string[]
+  ): Promise<DocumentReference<DocumentData, DocumentData>> {
     console.log('called hard delete')
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
-    await CRUDHandler.delete(collectionRef, documentId)
-    return collectionRef
+    const docRef = this.getReference(documentPath, 'doc')
+    await CRUDHandler.delete(docRef)
+    return docRef
   }
 
   async softDelete(
-    documentId: string,
-    parentDocumentIds: string[] = [],
+    documentPath: string[],
     updateFields: Partial<Write> = {}
-  ): Promise<CollectionReference<DocumentData, DocumentData>> {
+  ): Promise<DocumentReference<DocumentData, DocumentData>> {
     console.log('called soft delete')
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
+    const docRef = this.getReference(documentPath, 'doc')
     const data = {
       isActive: false,
       deletedAt: serverTimestamp(),
       ...updateFields,
     }
-    await CRUDHandler.update(
-      collectionRef,
-      documentId,
-      this.organizeUpdateData(data)
-    )
-    return collectionRef
+    await CRUDHandler.update(docRef, this.organizeUpdateData(data))
+    return docRef
   }
 
   async getAllAsQuerySnapshot(
-    parentDocumentIds: string[] = [],
+    collectionPath: string[] = [],
     queryConstraints: QueryConstraint[] = []
   ): Promise<QuerySnapshot<Read>> {
-    const collectionRef = this.getCollectionRef(
-      parentDocumentIds
+    const collectionRef = this.getReference(
+      collectionPath,
+      'collection'
     ) as CollectionReference<Read>
     return CRUDHandler.getAllAsQuerySnapshot<Read>(
       collectionRef,
@@ -252,31 +249,31 @@ abstract class FirestoreService<
   }
 
   async getAll(
-    parentDocumentIds: string[] = [],
+    collectionPath: string[] = [],
     queryConstraints: QueryConstraint[] = []
   ): Promise<Read[]> {
     console.log('called get all')
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
+    const collectionRef = this.getReference(collectionPath, 'collection')
     return CRUDHandler.getAll<Read>(collectionRef, ...queryConstraints)
   }
 
   async getFirstMatch(
     field: keyof Read,
     value: any,
-    parentDocumentIds: string[] = []
+    collectionPath: string[] = []
   ): Promise<Read | null> {
     console.log('called get first match')
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
+    const collectionRef = this.getReference(collectionPath, 'collection')
     return CRUDHandler.getFirstMatch<Read>(collectionRef, field, value)
   }
 
   async getAllWithPagination(
-    parentDocumentIds: string[] = [],
+    collectionPath: string[] = [],
     startAfterDoc?: DocumentSnapshot<Read>,
     limitCount?: number,
     ...queryConstraints: QueryConstraint[]
   ): Promise<Read[]> {
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
+    const collectionRef = this.getReference(collectionPath, 'collection')
     return CRUDHandler.getAllWithPagination<Read>(
       collectionRef,
       startAfterDoc,
@@ -291,53 +288,44 @@ abstract class FirestoreService<
 
   addCallback(
     callback: (snapshot: DocumentSnapshot<Read, DocumentData>) => void,
-    documentId: string,
-    parentDocumentIds: string[] = [],
+    documentPath: string[],
     callbackId?: string
   ): { callbackId: string; unsubscribe: Unsubscribe } {
-    const collectionRef = this.getCollectionRef(
-      parentDocumentIds
-    ) as CollectionReference<Read>
-    return this.callbacksHandler.addCallback(
-      collectionRef,
-      documentId,
-      callback,
-      callbackId
-    )
+    const docRef = this.getReference(
+      documentPath,
+      'doc'
+    ) as DocumentReference<Read>
+    return this.callbacksHandler.addCallback(docRef, callback, callbackId)
   }
 
   addReadCallback(
     callback: (data: Read | null) => void,
-    documentId: string,
-    parentDocumentIds: string[] = [],
+    documentPath: string[],
     callbackId?: string
   ): { callbackId: string; unsubscribe: Unsubscribe } {
     return this.addCallback(
       (snapshot) => callback(parseDocumentSnapshot(snapshot)),
-      documentId,
-      parentDocumentIds,
+      documentPath,
       callbackId
     )
   }
 
-  removeCallback(
-    callbackId: string,
-    documentId: string,
-    parentDocumentIds: string[] = []
-  ): void {
-    const collectionRef = this.getCollectionRef(
-      parentDocumentIds
-    ) as CollectionReference<Read>
-    this.callbacksHandler.removeCallback(collectionRef, documentId, callbackId)
+  removeCallback(callbackId: string, documentPath: string[]): void {
+    const docRef = this.getReference(
+      documentPath,
+      'doc'
+    ) as DocumentReference<Read>
+    this.callbacksHandler.removeCallback(docRef, callbackId)
   }
 
   addCollectionCallback(
     callback: (snapshot: QuerySnapshot<Read, DocumentData>) => void,
-    parentDocumentIds: string[] = [],
+    collectionPath: string[] = [],
     callbackId?: string
   ): { callbackId: string; unsubscribe: Unsubscribe } {
-    const collectionRef = this.getCollectionRef(
-      parentDocumentIds
+    const collectionRef = this.getReference(
+      collectionPath,
+      'collection'
     ) as CollectionReference<Read>
     return this.callbacksHandler.addCollectionCallback(
       collectionRef,
@@ -348,22 +336,23 @@ abstract class FirestoreService<
 
   addReadCollectionCallback(
     callback: (data: Read[]) => void,
-    parentDocumentIds: string[] = [],
+    collectionPath: string[] = [],
     callbackId?: string
   ): { callbackId: string; unsubscribe: Unsubscribe } {
     return this.addCollectionCallback(
       (snapshot) => callback(parseQuerySnapshot(snapshot)),
-      parentDocumentIds,
+      collectionPath,
       callbackId
     )
   }
 
   removeCollectionCallback(
     callbackId: string,
-    parentDocumentIds: string[] = []
+    collectionPath: string[] = []
   ): void {
-    const collectionRef = this.getCollectionRef(
-      parentDocumentIds
+    const collectionRef = this.getReference(
+      collectionPath,
+      'collection'
     ) as CollectionReference<Read>
     this.callbacksHandler.removeCollectionCallback(collectionRef, callbackId)
   }
@@ -393,44 +382,31 @@ abstract class FirestoreService<
 
   setInBatch(
     data: Write,
-    documentId: string | null,
-    parentDocumentIds: string[] = [],
+    documentPath: string[],
     batch = this.getBatch('setInBatch()')
-  ): CollectionReference<DocumentData, DocumentData> {
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
-    BatchHandler.set(
-      batch,
-      this.organizeCreateData(data),
-      collectionRef,
-      documentId
-    )
-    return collectionRef
+  ): DocumentReference<DocumentData, DocumentData> {
+    const docRef = this.getReference(documentPath, 'doc')
+    BatchHandler.set(batch, this.organizeCreateData(data), docRef)
+    return docRef
   }
 
   updateInBatch(
     data: Partial<Write>,
-    documentId: string,
-    parentDocumentIds: string[] = [],
+    documentPath: string[],
     batch = this.getBatch('updateInBatch()')
-  ): CollectionReference<DocumentData, DocumentData> {
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
-    BatchHandler.update(
-      batch,
-      this.organizeUpdateData(data),
-      collectionRef,
-      documentId
-    )
-    return collectionRef
+  ): DocumentReference<DocumentData, DocumentData> {
+    const docRef = this.getReference(documentPath, 'doc')
+    BatchHandler.update(batch, this.organizeUpdateData(data), docRef)
+    return docRef
   }
 
   deleteInBatch(
-    documentId: string,
-    parentDocumentIds: string[] = [],
+    documentPath: string[],
     batch = this.getBatch('deleteInBatch()')
-  ): CollectionReference<DocumentData, DocumentData> {
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
-    BatchHandler.delete(batch, collectionRef, documentId)
-    return collectionRef
+  ): DocumentReference<DocumentData, DocumentData> {
+    const docRef = this.getReference(documentPath, 'doc')
+    BatchHandler.delete(batch, docRef)
+    return docRef
   }
 
   // ======================================================================
@@ -457,59 +433,45 @@ abstract class FirestoreService<
   }
 
   async getInTransaction(
-    documentId: string,
-    parentDocumentIds: string[] = [],
+    documentPath: string[],
     transaction = this.getTransaction('getInTransaction()')
   ): Promise<Read | null> {
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
-    const result = await TransactionHandler.get(
-      transaction,
-      collectionRef,
-      documentId
-    )
+    const docRef = this.getReference(documentPath, 'doc')
+    const result = await TransactionHandler.get(transaction, docRef)
     return parseDocumentSnapshot<Read>(result)
   }
 
   setInTransaction(
     data: Write,
-    documentId: string | null,
-    parentDocumentIds: string[] = [],
+    documentPath: string[],
     transaction = this.getTransaction('setInTransaction()')
-  ): CollectionReference<DocumentData, DocumentData> {
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
-    TransactionHandler.set(
-      transaction,
-      this.organizeCreateData(data),
-      collectionRef,
-      documentId
-    )
-    return collectionRef
+  ): DocumentReference<DocumentData, DocumentData> {
+    const docRef = this.getReference(documentPath, 'doc')
+    TransactionHandler.set(transaction, this.organizeCreateData(data), docRef)
+    return docRef
   }
 
   updateInTransaction(
     data: Partial<Write>,
-    documentId: string,
-    parentDocumentIds: string[] = [],
+    documentPath: string[],
     transaction = this.getTransaction('updateInTransaction()')
-  ): CollectionReference<DocumentData, DocumentData> {
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
+  ): DocumentReference<DocumentData, DocumentData> {
+    const docRef = this.getReference(documentPath, 'doc')
     TransactionHandler.update(
       transaction,
       this.organizeUpdateData(data),
-      collectionRef,
-      documentId
+      docRef
     )
-    return collectionRef
+    return docRef
   }
 
   deleteInTransaction(
-    documentId: string,
-    parentDocumentIds: string[] = [],
+    documentPath: string[],
     transaction = this.getTransaction('deleteInTransaction()')
-  ): CollectionReference<DocumentData, DocumentData> {
-    const collectionRef = this.getCollectionRef(parentDocumentIds)
-    TransactionHandler.delete(transaction, collectionRef, documentId)
-    return collectionRef
+  ): DocumentReference<DocumentData, DocumentData> {
+    const docRef = this.getReference(documentPath, 'doc')
+    TransactionHandler.delete(transaction, docRef)
+    return docRef
   }
 }
 
