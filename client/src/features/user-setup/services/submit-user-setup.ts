@@ -5,7 +5,6 @@ import { UserWrite } from '../../../types/firebase/firestore-documents/users/use
 import { UserSetUpFormState } from '../hooks/useUserSetupForm'
 import { UserStatsMainRepository } from '../../../firebase/firestore/repositories/user-stats/user-stats-main-repository'
 import { UserStatsMainWrite } from '../../../types/firebase/firestore-documents/user-stats/user-stats-main-document'
-import { serverTimestamp } from 'firebase/firestore'
 
 const userRepo = new UserRepository()
 const userStatsMainRepo = new UserStatsMainRepository()
