@@ -3,7 +3,7 @@ import {
   getLocalDate,
   toISODate,
 } from '../../../functions/dateTime-utils/time-conversion'
-import { useCurrentUserStore } from '../../../stores/currentUserStore'
+import { useCurrentUserStore } from '../../../stores/user/currentUserStore'
 import userTeamMemberService from './useTeamMemberService'
 
 const dailyReportRepo = new DailyReportRepository()

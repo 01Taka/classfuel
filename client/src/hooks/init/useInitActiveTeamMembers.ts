@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react'
-import { useCurrentUserStore } from '../../stores/currentUserStore'
+import { useCurrentUserStore } from '../../stores/user/currentUserStore'
 import { TeamMemberRepository } from '../../firebase/firestore/repositories/teams/team-member-repository'
-import { useActiveTeamMembersStore } from '../../stores/activeTeamMembersStore'
+import { useActiveTeamMembersStore } from '../../stores/user/activeTeamMembersStore'
 
 const teamMemberRepo = new TeamMemberRepository()
 

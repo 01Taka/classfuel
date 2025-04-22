@@ -2,8 +2,8 @@ import { useMemo } from 'react'
 import { db } from '../../../firebase/firebase'
 import BatchManager from '../../../firebase/firestore/handler/batch-manager'
 import { TeamMemberRepository } from '../../../firebase/firestore/repositories/teams/team-member-repository'
-import { useCurrentUserStore } from '../../../stores/currentUserStore'
-import { useJoinedTeamsStore } from '../../../stores/joinedTeamsStore'
+import { useCurrentUserStore } from '../../../stores/user/currentUserStore'
+import { useJoinedTeamsStore } from '../../../stores/user/joinedTeamsStore'
 import { UserSession } from '../../../types/firebase/firestore-documents/users/user-document'
 
 const teamMemberRepo = new TeamMemberRepository()

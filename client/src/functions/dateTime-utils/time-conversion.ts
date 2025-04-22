@@ -1,7 +1,7 @@
 import { Timestamp } from 'firebase/firestore'
 import {
-  MINUTES_IN_MILLISECOND,
-  TIME_UNIT_IN_MILLISECONDS,
+  MINUTES_IN_MS,
+  TIME_UNIT_IN_MSS,
 } from '../../constants/datetime-constants'
 import {
   ISODate,
@@ -57,7 +57,7 @@ export const convertToDate = (time: TimeType): Date => {
 
 export const convertToLocalTimeMs = (dateTime: TimeType): number => {
   const date = convertToDate(dateTime)
-  return date.getTime() - date.getTimezoneOffset() * MINUTES_IN_MILLISECOND
+  return date.getTime() - date.getTimezoneOffset() * MINUTES_IN_MS
 }
 
 export const getLocalDate = (baseDate: TimeType = new Date()) => {
@@ -103,7 +103,7 @@ export const toTimestamp = (input: TimeType): Timestamp => {
 
 /**
  * ミリ秒を指定した時間単位に変換する関数（切り上げ）
- * 例：ミリ秒を「minutes」単位に変換する場合、ms / TIME_UNIT_IN_MILLISECONDS["minutes"] を切り上げた値を返す。
+ * 例：ミリ秒を「minutes」単位に変換する場合、ms / TIME_UNIT_IN_MSS["minutes"] を切り上げた値を返す。
  *
  * @param ms - ミリ秒
  * @param unit - 変換先の単位（デフォルトは "minutes"）
@@ -114,7 +114,7 @@ export const convertMsToUnit = (
   unit: TimeSizeUnit = 'minutes',
   decimalPlaces: number | null = 0
 ): number => {
-  const unitInMs = TIME_UNIT_IN_MILLISECONDS[unit]
+  const unitInMs = TIME_UNIT_IN_MSS[unit]
   if (decimalPlaces === null) {
     return ms / unitInMs
   }
@@ -128,5 +128,5 @@ export const convertMsToUnit = (
  * @returns 単位に相当するミリ秒
  */
 export const getMsPerUnit = (unit: TimeSizeUnit): number => {
-  return TIME_UNIT_IN_MILLISECONDS[unit]
+  return TIME_UNIT_IN_MSS[unit]
 }

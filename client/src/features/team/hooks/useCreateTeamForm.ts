@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { handleCreateTeam } from '../../join-team/services/team-services'
 import useAsyncHandler from '../../../hooks/async-processing/useAsyncHandler'
-import { useCurrentUserStore } from '../../../stores/currentUserStore'
+import { useCurrentUserStore } from '../../../stores/user/currentUserStore'
 import useDailyReportService from '../../session/hooks/useDailyReportService'
 import useFormState from '../../../hooks/form/useFormState'
 

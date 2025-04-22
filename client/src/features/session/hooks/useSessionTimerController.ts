@@ -1,7 +1,7 @@
 // useSessionTimerController.ts
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useCurrentUserStore } from '../../../stores/currentUserStore'
+import { useCurrentUserStore } from '../../../stores/user/currentUserStore'
 import useRemainingTime from '../hooks/useRemainingTime'
 import FinishSE from '../../../assets/sounds/timer.mp3'
 import useSessionService from '../../../hooks/services/useSessionService'

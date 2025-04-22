@@ -175,11 +175,13 @@ export class CRUDHandler {
    * @param collectionRef 読み込み対象の CollectionReference
    * @param field 検索するフィールド名
    * @param value 検索する値
+   * @param throwIfNotFound 見つからなかった場合にエラーをスローするかどうか（デフォルト: false）
    */
   public static async getFirstMatch<Read extends BaseDocumentRead>(
     collectionRef: CollectionReference,
     field: keyof Read,
-    value: any
+    value: any,
+    throwIfNotFound: boolean = false
   ): Promise<Read | null> {
     const q = query(
       collectionRef,
@@ -187,10 +189,21 @@ export class CRUDHandler {
       where('isActive', '==', true),
       limit(1)
     )
+
     const querySnapshot = await this.handleFirestoreOperation(
       getDocs(q),
       'Failed to get first match'
     )
+
+    if (!querySnapshot || querySnapshot.empty) {
+      if (throwIfNotFound) {
+        throw new Error(
+          `[Firestore Error] No matching document found for ${String(field)} = ${value}`
+        )
+      }
+      return null
+    }
+
     return parseDocumentSnapshot<Read>(querySnapshot.docs[0])
   }
 

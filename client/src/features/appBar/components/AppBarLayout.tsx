@@ -7,7 +7,7 @@ import JoinTeamLayout from '../../team/components/JoinTeamLayout'
 import { useAppBarState } from '../hooks/useAppBarState'
 import { UserActions } from './UserActions'
 import { TeamDropdownMenu } from '../../team/components/TeamDropdownMenu'
-import { useCurrentUserStore } from '../../../stores/currentUserStore'
+import { useCurrentUserStore } from '../../../stores/user/currentUserStore'
 
 export const AppBarLayout: React.FC = () => {
   const { user } = useCurrentUserStore()

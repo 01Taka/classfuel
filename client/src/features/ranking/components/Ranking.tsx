@@ -1,6 +1,6 @@
 import React from 'react'
-import { useActiveTeamMembersStore } from '../../../stores/activeTeamMembersStore'
-import { useCurrentUserStore } from '../../../stores/currentUserStore'
+import { useActiveTeamMembersStore } from '../../../stores/user/activeTeamMembersStore'
+import { useCurrentUserStore } from '../../../stores/user/currentUserStore'
 import RankingList from './RankingList'
 
 interface RankingProps {}

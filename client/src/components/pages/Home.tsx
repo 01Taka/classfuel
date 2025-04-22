@@ -5,7 +5,7 @@ import HomeScreenLayout from '../templates/HomeScreenLayout'
 
 interface HomeProps {}
 
-const Home: React.FC<HomeProps> = ({}) => {
+const Home: React.FC<HomeProps> = () => {
   return (
     <div>
       <HomeScreenLayout />

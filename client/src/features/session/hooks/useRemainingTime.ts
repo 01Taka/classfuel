@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { convertToMilliseconds } from '../../../functions/dateTime-utils/time-conversion'
-import { useCurrentUserStore } from '../../../stores/currentUserStore'
+import { useCurrentUserStore } from '../../../stores/user/currentUserStore'
 
 const useRemainingTime = () => {
   const { user } = useCurrentUserStore()

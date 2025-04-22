@@ -3,7 +3,7 @@ import { Chat } from '../../types/components/chat-types'
 import MessageBubble from '../molecules/MessageBubble'
 import { Stack } from '@mui/material'
 import { blue, purple } from '@mui/material/colors'
-import { useCurrentUserStore } from '../../stores/currentUserStore'
+import { useCurrentUserStore } from '../../stores/user/currentUserStore'
 
 interface ChatWindowProps {}
 

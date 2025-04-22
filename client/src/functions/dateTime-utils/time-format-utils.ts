@@ -1,6 +1,6 @@
 import { differenceInDays } from 'date-fns'
 import { getMidnightDate } from './datetime-utils'
-import { MINUTES_IN_MILLISECOND } from '../../constants/datetime-constants'
+import { MINUTES_IN_MS } from '../../constants/datetime-constants'
 import { convertToMilliseconds, getMsPerUnit } from './time-conversion'
 import { TimeType, TimeSizeUnit } from '../../types/datetime-types'
 
@@ -99,7 +99,7 @@ export const formatAbbreviatedDuration = (
 ): string => {
   const minuteLabel = options?.minuteLabel ?? 'min'
   const hourLabel = options?.hourLabel ?? 'h'
-  const totalMinutes = Math.floor(ms / MINUTES_IN_MILLISECOND)
+  const totalMinutes = Math.floor(ms / MINUTES_IN_MS)
   if (totalMinutes >= 60) {
     const hours = (totalMinutes / 60).toFixed(1)
     return `${hours}${hourLabel}`

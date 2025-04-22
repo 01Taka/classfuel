@@ -5,10 +5,10 @@ import ContainerCard from '../../../components/atoms/ContainerCard'
 import useSessionsElapsedTime, {
   SessionTimerInfo,
 } from '../hooks/useSessionsElapsedTime'
-import { MINUTES_IN_MILLISECOND } from '../../../constants/datetime-constants'
+import { MINUTES_IN_MS } from '../../../constants/datetime-constants'
 import useTeamMemberState from '../hooks/useTeamMemberState'
 import { ArrowRight } from '@mui/icons-material'
-import { useActiveTeamMembersStore } from '../../../stores/activeTeamMembersStore'
+import { useActiveTeamMembersStore } from '../../../stores/user/activeTeamMembersStore'
 import { sortTeamMembers } from '../services/sort-team-members'
 
 interface ActiveUserPanelProps {}
@@ -37,8 +37,7 @@ const ActiveUserPanel: React.FC<ActiveUserPanelProps> = ({}) => {
 
   const getTimerText = (timerInfo: SessionTimerInfo | null): string => {
     if (!timerInfo?.inSession) return ''
-    const formatTime = (time: number) =>
-      Math.floor(time / MINUTES_IN_MILLISECOND)
+    const formatTime = (time: number) => Math.floor(time / MINUTES_IN_MS)
 
     const elapsedMin = formatTime(timerInfo.elapsedTime)
     const remainingMin = formatTime(timerInfo.remainingTime)

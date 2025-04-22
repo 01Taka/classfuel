@@ -1,6 +1,6 @@
 // stores/useUserStore.ts
 import { create } from 'zustand'
-import { TeamMemberRead } from '../types/firebase/firestore-documents/teams/team-member-document'
+import { TeamMemberRead } from '../../types/firebase/firestore-documents/teams/team-member-document'
 
 interface JoinedTeamsStore {
   members: TeamMemberRead[]

@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { TeamRepository } from '../../../firebase/firestore/repositories/teams/team-repository'
 import { handleJoinTeam } from '../../join-team/services/team-services'
-import { useCurrentUserStore } from '../../../stores/currentUserStore'
+import { useCurrentUserStore } from '../../../stores/user/currentUserStore'
 import { TeamRead } from '../../../types/firebase/firestore-documents/teams/team-document'
 import {
   extractTeamCode,
   isRogueFirestoreId,
 } from '../../../functions/team-code-utils'
-import { useJoinedTeamsStore } from '../../../stores/joinedTeamsStore'
+import { useJoinedTeamsStore } from '../../../stores/user/joinedTeamsStore'
 import { UserRepository } from '../../../firebase/firestore/repositories/users/user-repository'
 
 const userRepo = new UserRepository()

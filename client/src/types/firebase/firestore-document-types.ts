@@ -23,3 +23,11 @@ export interface SoftDeleteAdditionalField {
 
 export type DocumentWrite<T> = T & BaseDocumentWrite
 export type DocumentRead<T> = T & BaseDocumentRead
+
+export type RemoveFieldValue<T> = T extends FieldValue
+  ? never
+  : T extends (infer U)[]
+    ? RemoveFieldValue<U>[]
+    : T extends object
+      ? { [K in keyof T]: RemoveFieldValue<T[K]> }
+      : T

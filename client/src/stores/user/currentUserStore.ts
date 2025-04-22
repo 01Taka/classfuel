@@ -1,6 +1,6 @@
 // stores/useUserStore.ts
 import { create } from 'zustand'
-import { UserRead } from '../types/firebase/firestore-documents/users/user-document'
+import { UserRead } from '../../types/firebase/firestore-documents/users/user-document'
 
 interface CurrentUserStore {
   uid: string | null

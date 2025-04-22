@@ -1,19 +1,19 @@
 import { TimeSizeUnit } from '../types/datetime-types'
 
-export const SECONDS_IN_MILLISECOND = 1000
-export const MINUTES_IN_MILLISECOND = SECONDS_IN_MILLISECOND * 60
-export const HOURS_IN_MILLISECOND = MINUTES_IN_MILLISECOND * 60
-export const DAYS_IN_MILLISECOND = HOURS_IN_MILLISECOND * 24
-export const YEARS_IN_MILLISECOND = DAYS_IN_MILLISECOND * 365
+export const SECONDS_IN_MS = 1000
+export const MINUTES_IN_MS = SECONDS_IN_MS * 60
+export const HOURS_IN_MS = MINUTES_IN_MS * 60
+export const DAYS_IN_MS = HOURS_IN_MS * 24
+export const YEARS_IN_MS = DAYS_IN_MS * 365
 
 // 各単位のミリ秒数をマッピング
-export const TIME_UNIT_IN_MILLISECONDS: Record<TimeSizeUnit, number> = {
+export const TIME_UNIT_IN_MSS: Record<TimeSizeUnit, number> = {
   millis: 1,
-  seconds: 1000, // SECONDS_IN_MILLISECOND
-  minutes: 60 * 1000, // MINUTES_IN_MILLISECOND
-  hours: 60 * 60 * 1000, // HOURS_IN_MILLISECOND
-  days: 24 * 60 * 60 * 1000, // DAYS_IN_MILLISECOND
-  years: 365 * 24 * 60 * 60 * 1000, // YEARS_IN_MILLISECOND
+  seconds: 1000, // SECONDS_IN_MS
+  minutes: 60 * 1000, // MINUTES_IN_MS
+  hours: 60 * 60 * 1000, // HOURS_IN_MS
+  days: 24 * 60 * 60 * 1000, // DAYS_IN_MS
+  years: 365 * 24 * 60 * 60 * 1000, // YEARS_IN_MS
 }
 
 export const DIGIT_SIZE: Record<TimeSizeUnit, number> = {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import TextWithLabel from '../../../components/atoms/TextWithLabel'
 import ContainerCard from '../../../components/atoms/ContainerCard'
 import { formatDuration } from '../../../functions/dateTime-utils/time-format-utils'
-import { useCurrentUserStore } from '../../../stores/currentUserStore'
+import { useCurrentUserStore } from '../../../stores/user/currentUserStore'
 import useDailyReportService from '../../session/hooks/useDailyReportService'
 import { getRanking } from './services/ranking-services'
 

@@ -53,6 +53,17 @@ service cloud.firestore {
 
         allow delete: if false;
       }
+
+      match /stats/main {
+        
+        allow read: if isSignedIn() && request.auth.uid == userId;
+
+        allow create: if isSignedIn() && isCreatingNewDocWithServerTimestamp();
+
+        allow update: if isSignedIn() && request.auth.uid == userId;
+
+        allow delete: if false;
+      }
     }
 
     match /teams/{teamId} {

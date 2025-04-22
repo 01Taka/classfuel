@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { UserRepository } from '../firebase/firestore/repositories/users/user-repository'
-import { useUsersStore } from '../stores/usersStore'
+import { useUsersStore } from '../stores/user/usersStore'
 import { UserRead } from '../types/firebase/firestore-documents/users/user-document'
 
 const useUserService = () => {

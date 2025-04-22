@@ -1,7 +1,7 @@
 import { Box, Container, Paper, Typography } from '@mui/material'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useEffect } from 'react'
-import { useCurrentUserStore } from '../../stores/currentUserStore'
+import { useCurrentUserStore } from '../../stores/user/currentUserStore'
 import UserSetupForm from '../../features/user-setup/components/UserSetupForm'
 import { submitUserSetup } from '../../features/user-setup/services/submit-user-setup'
 

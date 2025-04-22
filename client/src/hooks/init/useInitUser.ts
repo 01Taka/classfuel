@@ -3,7 +3,7 @@ import { useEffect, useCallback, useMemo } from 'react'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { getAuth } from 'firebase/auth'
 import { UserRepository } from '../../firebase/firestore/repositories/users/user-repository'
-import { useCurrentUserStore } from '../../stores/currentUserStore'
+import { useCurrentUserStore } from '../../stores/user/currentUserStore'
 
 const userRepo = new UserRepository()
 
