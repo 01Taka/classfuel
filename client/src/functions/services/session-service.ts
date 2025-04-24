@@ -3,7 +3,6 @@ import BatchManager from '../../firebase/firestore/handler/batch-manager'
 import { TeamMemberRepository } from '../../firebase/firestore/repositories/teams/team-member-repository'
 import { DailyReportRepository } from '../../firebase/firestore/repositories/users/user-daily-report-repository'
 import { UserRepository } from '../../firebase/firestore/repositories/users/user-repository'
-import { UserStatsMainRead } from '../../types/firebase/firestore-documents/user-stats/user-stats-main-document'
 import { UserSession } from '../../types/firebase/firestore-documents/users/user-document'
 import {
   toTimestamp,
@@ -11,7 +10,6 @@ import {
   toISODate,
   getLocalDate,
 } from '../dateTime-utils/time-conversion'
-import { progressStatsMainUpdate } from './user-stats-main-service'
 
 // インスタンスはモジュールスコープで保持
 const userRepo = new UserRepository()
@@ -175,47 +173,36 @@ export const handleRestartSession = async (
 export const handleFinishSession = async (
   uid: string,
   teamIds: string[],
-  stats: UserStatsMainRead,
   session: UserSession | null
 ) => {
   if (!session) return
 
+  let elapsedTime: number | null = null
   if (session.type === 'study') {
-    const elapsedTime = calculateElapsedTime(session)
+    elapsedTime = calculateElapsedTime(session)
     await addStudyTime(uid, teamIds, elapsedTime)
-    await updateStats(uid, stats, elapsedTime)
   }
 
   await updateSession(uid, teamIds, null)
+  return elapsedTime
 }
 
 export const handleSwitchSession = async (
   uid: string,
   teamIds: string[],
-  stats: UserStatsMainRead,
   session: UserSession | null,
   type: 'study' | 'break',
   durationMs: number
-) => {
-  if (!uid) return
+): Promise<number | null> => {
+  if (!uid) return null
 
+  let elapsedTime: number | null = null
   if (session?.type === 'study') {
-    const elapsedTime = calculateElapsedTime(session)
+    elapsedTime = calculateElapsedTime(session)
     await addStudyTime(uid, teamIds, elapsedTime)
-    await updateStats(uid, stats, elapsedTime)
   }
 
   const newSession = createNewSession(type, durationMs)
   await updateSession(uid, teamIds, newSession)
-}
-
-// --------------------------------------------
-// Stats Handlers
-// --------------------------------------------
-const updateStats = async (
-  uid: string,
-  stats: UserStatsMainRead,
-  durationMs: number
-) => {
-  await progressStatsMainUpdate(uid, stats, durationMs)
+  return elapsedTime
 }

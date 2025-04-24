@@ -57,7 +57,7 @@ const useSessionTimerController = () => {
     setHasBreakStarted(false)
     onFinishSession()
     stopSoundInterval()
-    navigate('/')
+    navigate('/?modal=result')
   }
 
   const handleBreak = (time: number) => {

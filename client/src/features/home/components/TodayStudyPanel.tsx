@@ -4,7 +4,7 @@ import ContainerCard from '../../../components/atoms/ContainerCard'
 import { formatDuration } from '../../../functions/dateTime-utils/time-format-utils'
 import { useCurrentUserStore } from '../../../stores/user/currentUserStore'
 import useDailyReportService from '../../session/hooks/useDailyReportService'
-import { getRanking } from './services/ranking-services'
+import { getRanking } from '../services/ranking-services'
 
 interface TodayStudyPanelProps {}
 

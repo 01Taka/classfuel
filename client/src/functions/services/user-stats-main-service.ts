@@ -6,30 +6,21 @@ import {
 import { getDayOffsetFromBase } from '../dateTime-utils/datetime-utils'
 import { increment, serverTimestamp } from 'firebase/firestore'
 import { convertToDate } from '../dateTime-utils/time-conversion'
-import { HOURS_IN_MS, MINUTES_IN_MS } from '../../constants/datetime-constants'
+import { HOURS_IN_MS } from '../../constants/datetime-constants'
 import { TimeType } from '../../types/datetime-types'
+import { StatsUpdateDetails, TimeSlot } from '../../types/services/stats-types'
+import {
+  DAYS_TO_RECOVER_HP,
+  LONG_MIN_TIME,
+  LONG_SESSION_HOURLY_BONUS_RATE,
+  LONG_SESSION_RATE,
+  MAX_STREAK_HP,
+  SHORT_MIN_TIME,
+  SHORT_SESSION_INCREMENT,
+  TIME_SLOT_BONUS,
+} from '../../constants/stats-constants'
 
 const userStatsMainRepo = new UserStatsMainRepository()
-
-const MAX_STREAK_HP = 2
-const DAYS_TO_RECOVER_HP = 5
-
-const SHORT_MIN_TIME = 10 * MINUTES_IN_MS
-const LONG_MIN_TIME = 30 * MINUTES_IN_MS
-const TIME_SLOT_BONUS = 5
-const SHORT_SESSION_INCREMENT = 1
-const LONG_SESSION_RATE = 1
-const LONG_SESSION_HOURLY_BONUS_RATE = 2
-
-type TimeSlot =
-  | 'lateNight'
-  | 'earlyMorning'
-  | 'morning'
-  | 'lateMorning'
-  | 'afternoon'
-  | 'evening'
-  | 'earlyNight'
-  | 'lateEvening'
 
 function getTimeSlot(date: Date): TimeSlot {
   const hour = date.getHours()
@@ -42,25 +33,6 @@ function getTimeSlot(date: Date): TimeSlot {
   if (hour >= 15 && hour < 18) return 'evening'
   if (hour >= 18 && hour < 21) return 'earlyNight'
   return 'lateEvening'
-}
-
-type StatsUpdateDetails = {
-  updates: Partial<UserStatsMainWrite>
-  newStats: {
-    expShort: number
-    expLong: number
-    streak: number
-    streakHP: number
-    daysStudiedSinceLastHPUse: number
-  }
-  details: {
-    timeSlot: TimeSlot
-    isSameTimeSlot: boolean
-    shortSessionBonus: number
-    longSessionHourlyBonus: number
-    expShortGained: number
-    expLongGained: number
-  }
 }
 
 export const progressStatsMainUpdate = async (

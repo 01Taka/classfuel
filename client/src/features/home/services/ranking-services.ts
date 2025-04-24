@@ -1,4 +1,4 @@
-import { TeamMemberRepository } from '../../../../firebase/firestore/repositories/teams/team-member-repository'
+import { TeamMemberRepository } from '../../../firebase/firestore/repositories/teams/team-member-repository'
 
 const teamMemberRepo = new TeamMemberRepository()
 
