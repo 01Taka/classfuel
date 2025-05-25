@@ -7,10 +7,10 @@ interface HomeProps {}
 
 const Home: React.FC<HomeProps> = () => {
   return (
-    <div>
+    <>
       <HomeScreenLayout />
       <BottomNavigationBar items={defaultNavItems} />
-    </div>
+    </>
   )
 }
 

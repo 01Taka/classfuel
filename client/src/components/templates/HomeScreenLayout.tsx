@@ -8,17 +8,32 @@ import AppBarLayout from '../../features/appBar/components/AppBarLayout'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Popup from '../molecules/Popup'
 import SessionResult from '../../features/session/components/stats/SessionResult'
+import ProgressionMap from '../../features/home/components/progressionMap/ProgressionMap'
+import Quickstart from '../../features/home/components/quickstart/Quickstart'
+import useSessionService from '../../hooks/services/useSessionService'
+import { MINUTES_IN_MS } from '../../constants/datetime-constants'
 
 interface HomeScreenLayoutProps {}
 
 const HomeScreenLayout: React.FC<HomeScreenLayoutProps> = ({}) => {
   const navigate = useNavigate()
   const [searchPrams, _setSearchPrams] = useSearchParams()
+  const { onStartSession } = useSessionService()
+
+  const handleQuickStart = (duration: number) => {
+    onStartSession('study', duration)
+    navigate('/session')
+  }
 
   return (
     <>
       <AppBarLayout />
-      <Stack spacing={3} mt={3}>
+      <Stack spacing={3} mt={10}>
+        <Quickstart
+          onQuickstartClick={(min) => handleQuickStart(min * MINUTES_IN_MS)}
+        />
+        <ProgressionMap />
+
         <TodayDisplay />
         <TodayStudyPanel />
         <StartPanel />
