@@ -6,7 +6,7 @@ import {
 
 export interface DailyReportData {
   date: ISODate // YYYY-MM-DD形式の日付
-  studyTime: number // で記録
+  studyTime: number
 }
 
 export type DailyReportRead = BaseDocumentRead & DailyReportData

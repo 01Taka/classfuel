@@ -17,8 +17,6 @@ const useInitUser = () => {
   const fetchUser = useCallback(async () => {
     if (!uid) return
     try {
-      console.log('read')
-
       const userData = await userRepo.read([uid])
       setUser(userData)
     } catch (err) {
@@ -33,8 +31,6 @@ const useInitUser = () => {
     if (!uid) return
 
     fetchUser()
-
-    console.log('snapshot')
 
     const { unsubscribe } = userRepo.addCallback(
       (snapshot) => {

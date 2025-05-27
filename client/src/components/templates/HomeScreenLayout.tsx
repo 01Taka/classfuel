@@ -1,9 +1,5 @@
 import React from 'react'
-import TodayDisplay from '../../features/home/components/TodayDisplay'
-import StartPanel from '../../features/home/components/StartPanel'
-import TodayStudyPanel from '../../features/home/components/TodayStudyPanel'
 import { Stack } from '@mui/material'
-import ActiveUserPanel from '../../features/home/components/ActiveUserPanel'
 import AppBarLayout from '../../features/appBar/components/AppBarLayout'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Popup from '../molecules/Popup'
@@ -12,18 +8,30 @@ import ProgressionMap from '../../features/home/components/progressionMap/Progre
 import Quickstart from '../../features/home/components/quickstart/Quickstart'
 import useSessionService from '../../hooks/services/useSessionService'
 import { MINUTES_IN_MS } from '../../constants/datetime-constants'
+import { useCurrentUserStore } from '../../stores/user/currentUserStore'
+import { useUserReportStore } from '../../stores/user/userReportStore'
+import { MS_PER_STEP } from '../../constants/main-constants'
 
 interface HomeScreenLayoutProps {}
 
 const HomeScreenLayout: React.FC<HomeScreenLayoutProps> = ({}) => {
   const navigate = useNavigate()
   const [searchPrams, _setSearchPrams] = useSearchParams()
+  const { user } = useCurrentUserStore()
+  const { todayReport } = useUserReportStore()
   const { onStartSession } = useSessionService()
 
   const handleQuickStart = (duration: number) => {
     onStartSession('study', duration)
     navigate('/session')
   }
+
+  const stepsAdvancedToday = Math.floor(
+    (todayReport?.studyTime ?? 0) / MS_PER_STEP
+  )
+  const totalStepsAdvanced = Math.floor(
+    (user?.status?.totalStudyDuration ?? 0) / MS_PER_STEP
+  )
 
   return (
     <>
@@ -32,12 +40,16 @@ const HomeScreenLayout: React.FC<HomeScreenLayoutProps> = ({}) => {
         <Quickstart
           onQuickstartClick={(min) => handleQuickStart(min * MINUTES_IN_MS)}
         />
-        <ProgressionMap />
-
+        <ProgressionMap
+          todayStudyTimeMs={todayReport?.studyTime ?? 0}
+          stepsAdvancedToday={stepsAdvancedToday}
+          totalAdvanceNumber={totalStepsAdvanced}
+        />
+        {/* 
         <TodayDisplay />
         <TodayStudyPanel />
         <StartPanel />
-        <ActiveUserPanel />
+        <ActiveUserPanel /> */}
       </Stack>
       <Popup
         open={searchPrams.get('modal') === 'result'}

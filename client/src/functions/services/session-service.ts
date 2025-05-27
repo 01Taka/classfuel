@@ -1,3 +1,4 @@
+import { increment } from 'firebase/firestore'
 import { db } from '../../firebase/firebase'
 import BatchManager from '../../firebase/firestore/handler/batch-manager'
 import { TeamMemberRepository } from '../../firebase/firestore/repositories/teams/team-member-repository'
@@ -11,7 +12,7 @@ import {
   getLocalDate,
 } from '../dateTime-utils/time-conversion'
 
-// インスタンスはモジュールスコープで保持
+// Repositories (module scope)
 const userRepo = new UserRepository()
 const teamMemberRepo = new TeamMemberRepository()
 const dailyReportRepo = new DailyReportRepository()
@@ -21,7 +22,7 @@ const nowTimestamp = () => toTimestamp(now())
 const today = toISODate(getLocalDate())
 
 // --------------------------------------------
-// Session Utilities
+// Low-level utilities
 // --------------------------------------------
 
 const createNewSession = (
@@ -48,23 +49,23 @@ const calculateElapsedTime = (session: UserSession): number => {
     : base
 }
 
+// --------------------------------------------
+// Data operations
+// --------------------------------------------
+
 const updateSession = async (
   uid: string,
   teamIds: string[] | null,
   updatedSession: UserSession | null
 ) => {
   const batchManager = new BatchManager(db)
-  batchManager.runInBatch(() => {
+  await batchManager.runInBatch(() => {
     userRepo.updateInBatch({ session: updatedSession }, [uid])
     teamIds?.forEach((teamId) => {
       teamMemberRepo.updateInBatch({ session: updatedSession }, [teamId, uid])
     })
   }, [userRepo, teamMemberRepo])
 }
-
-// --------------------------------------------
-// Daily Report Utilities
-// --------------------------------------------
 
 const getTodayReport = async (uid: string) => {
   try {
@@ -75,22 +76,8 @@ const getTodayReport = async (uid: string) => {
   }
 }
 
-const updateTeamStudyTime = async (
+const addStudyTimeToTodayReport = async (
   uid: string,
-  teamIds: string[],
-  todayStudyTime: number
-) => {
-  const batchManager = new BatchManager(db)
-  await batchManager.runInBatch(() => {
-    teamIds.forEach((teamId) =>
-      teamMemberRepo.update({ todayStudyTime }, [teamId, uid])
-    )
-  }, [teamMemberRepo])
-}
-
-const addStudyTime = async (
-  uid: string,
-  teamIds: string[],
   additionalTime: number
 ) => {
   const report = await getTodayReport(uid)
@@ -107,11 +94,72 @@ const addStudyTime = async (
     ])
   }
 
-  await updateTeamStudyTime(uid, teamIds, newStudyTime)
+  return newStudyTime
+}
+
+const addStudyTime = async (
+  uid: string,
+  teamIds: string[] | null,
+  additionalTime: number
+) => {
+  const newStudyTime = await addStudyTimeToTodayReport(uid, additionalTime)
+
+  if (teamIds) {
+    const batchManager = new BatchManager(db)
+    await batchManager.runInBatch(() => {
+      userRepo.updateInBatch(
+        { status: { totalStudyDuration: increment(additionalTime) } },
+        [uid]
+      )
+
+      teamIds.forEach((teamId) =>
+        teamMemberRepo.updateInBatch({ todayStudyTime: newStudyTime }, [
+          teamId,
+          uid,
+        ])
+      )
+    }, [userRepo, teamMemberRepo])
+  }
 }
 
 // --------------------------------------------
-// Session Handlers
+// Unified session update handler
+// --------------------------------------------
+
+type ApplySessionOptions = {
+  uid: string
+  teamIds: string[] | null
+  sessionBefore: UserSession | null
+  sessionAfter: UserSession | null
+  updateStudyTime?: boolean // デフォルト true
+}
+
+/**
+ * Apply session changes and optionally update study time if sessionBefore was 'study'.
+ * @returns elapsed study time in ms if updated, otherwise null.
+ */
+export const applySessionUpdate = async ({
+  uid,
+  teamIds,
+  sessionBefore,
+  sessionAfter,
+  updateStudyTime = true,
+}: ApplySessionOptions): Promise<number | null> => {
+  let elapsed: number | null = null
+
+  // 前のセッションが study であれば経過時間を追加
+  if (sessionBefore?.type === 'study' && updateStudyTime) {
+    elapsed = calculateElapsedTime(sessionBefore)
+    await addStudyTime(uid, teamIds, elapsed)
+  }
+
+  // ユーザーとチームへの session 更新
+  await updateSession(uid, teamIds, sessionAfter)
+  return elapsed
+}
+
+// --------------------------------------------
+// Session Handlers (Refactored)
 // --------------------------------------------
 
 export const handleStartSession = async (
@@ -123,7 +171,13 @@ export const handleStartSession = async (
 ) => {
   if (!uid || currentSession) return
   const newSession = createNewSession(type, durationMs)
-  await updateSession(uid, teamIds, newSession)
+  await applySessionUpdate({
+    uid,
+    teamIds,
+    sessionBefore: null,
+    sessionAfter: newSession,
+    updateStudyTime: false,
+  })
 }
 
 export const handleStopSession = async (
@@ -133,19 +187,19 @@ export const handleStopSession = async (
 ) => {
   if (!session || session.status !== 'running') return
 
-  const elapsed = calculateElapsedTime(session)
-  if (session.type === 'study') {
-    await addStudyTime(uid, teamIds, elapsed)
-  }
-
   const updatedSession: UserSession = {
     ...session,
     stoppedAt: nowTimestamp(),
     status: 'stopped',
-    elapsedDuration: elapsed,
+    elapsedDuration: calculateElapsedTime(session),
   }
 
-  await updateSession(uid, teamIds, updatedSession)
+  await applySessionUpdate({
+    uid,
+    teamIds,
+    sessionBefore: session,
+    sessionAfter: updatedSession,
+  })
 }
 
 export const handleRestartSession = async (
@@ -167,24 +221,28 @@ export const handleRestartSession = async (
     status: 'running',
   }
 
-  await updateSession(uid, teamIds, updatedSession)
+  await applySessionUpdate({
+    uid,
+    teamIds,
+    sessionBefore: session,
+    sessionAfter: updatedSession,
+    updateStudyTime: false, // 再開時には studyTime を追加しない
+  })
 }
 
 export const handleFinishSession = async (
   uid: string,
   teamIds: string[],
   session: UserSession | null
-) => {
-  if (!session) return
-
-  let elapsedTime: number | null = null
-  if (session.type === 'study') {
-    elapsedTime = calculateElapsedTime(session)
-    await addStudyTime(uid, teamIds, elapsedTime)
-  }
-
-  await updateSession(uid, teamIds, null)
-  return elapsedTime
+): Promise<number | null> => {
+  if (!session) return null
+  const elapsed = await applySessionUpdate({
+    uid,
+    teamIds,
+    sessionBefore: session,
+    sessionAfter: null,
+  })
+  return elapsed
 }
 
 export const handleSwitchSession = async (
@@ -195,14 +253,12 @@ export const handleSwitchSession = async (
   durationMs: number
 ): Promise<number | null> => {
   if (!uid) return null
-
-  let elapsedTime: number | null = null
-  if (session?.type === 'study') {
-    elapsedTime = calculateElapsedTime(session)
-    await addStudyTime(uid, teamIds, elapsedTime)
-  }
-
   const newSession = createNewSession(type, durationMs)
-  await updateSession(uid, teamIds, newSession)
-  return elapsedTime
+  const elapsed = await applySessionUpdate({
+    uid,
+    teamIds,
+    sessionBefore: session,
+    sessionAfter: newSession,
+  })
+  return elapsed
 }

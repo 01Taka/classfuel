@@ -6,22 +6,21 @@ import MapCharacter from './MapCharacter'
 import MapStateText from './MapStateText'
 
 interface ProgressionMapProps {
-  startCellId?: number
-  endCellId?: number
   todayStudyTimeMs: number
-  todayAdvanceNumber: number
+  stepsAdvancedToday: number
   totalAdvanceNumber: number
+  cellNumber?: number
 }
 
 const ProgressionMap: React.FC<ProgressionMapProps> = ({
-  startCellId = 1,
-  endCellId = startCellId + 4,
   todayStudyTimeMs = 0,
-  todayAdvanceNumber = 0,
+  stepsAdvancedToday = 0,
+  totalAdvanceNumber = 0,
+  cellNumber = 4,
 }) => {
   const cells = Array.from(
-    { length: endCellId - startCellId },
-    (_, i) => i + startCellId
+    { length: cellNumber },
+    (_, i) => i + totalAdvanceNumber
   )
 
   return (
@@ -42,7 +41,7 @@ const ProgressionMap: React.FC<ProgressionMapProps> = ({
       >
         <MapStateText
           todayStudyTimeMs={todayStudyTimeMs}
-          advanceNumber={todayAdvanceNumber}
+          advanceNumber={stepsAdvancedToday}
         />
       </Box>
 

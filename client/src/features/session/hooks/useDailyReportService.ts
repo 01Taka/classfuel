@@ -4,6 +4,7 @@ import {
   toISODate,
 } from '../../../functions/dateTime-utils/time-conversion'
 import { useCurrentUserStore } from '../../../stores/user/currentUserStore'
+import { useUserReportStore } from '../../../stores/user/userReportStore'
 import userTeamMemberService from './useTeamMemberService'
 
 const dailyReportRepo = new DailyReportRepository()
@@ -12,12 +13,15 @@ const useDailyReportService = () => {
   const { uid } = useCurrentUserStore()
   const { updateTodayStudyTime: updateTodayStudyTimeAtMember } =
     userTeamMemberService()
+  const { setTodayReport } = useUserReportStore()
   const today = toISODate(getLocalDate())
 
-  const getTodayReport = async () => {
+  const updateTodayReport = async () => {
     if (!uid) return null
     try {
-      return await dailyReportRepo.getFirstMatch('date', today, [uid])
+      const report = await dailyReportRepo.getFirstMatch('date', today, [uid])
+      setTodayReport(report)
+      return report
     } catch (error) {
       console.error('Error getting today report:', error)
       return null
@@ -26,7 +30,7 @@ const useDailyReportService = () => {
 
   const handleAddStudyTime = async (studyTime: number) => {
     if (!uid) return
-    const todayReport = await getTodayReport()
+    const todayReport = await updateTodayReport()
 
     const todayStudyTime = todayReport
       ? todayReport.studyTime + studyTime
@@ -49,7 +53,7 @@ const useDailyReportService = () => {
 
   return {
     handleAddStudyTime,
-    getTodayReport,
+    updateTodayReport,
   }
 }
 

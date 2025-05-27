@@ -10,12 +10,14 @@ import { useCurrentUserStore } from '../../stores/user/currentUserStore'
 import { useJoinedTeamsStore } from '../../stores/user/joinedTeamsStore'
 import { useStatsMainStore } from '../../stores/user/statsMainStore'
 import { progressStatsMainUpdate } from '../../functions/services/user-stats-main-service'
+import useDailyReportService from '../../features/session/hooks/useDailyReportService'
 
 const useSessionService = () => {
   const { uid, user } = useCurrentUserStore()
   const { stats } = useStatsMainStore()
   const { joinedTeams } = useJoinedTeamsStore()
   const { setLastSessionStats } = useStatsMainStore()
+  const {} = useDailyReportService()
 
   const teamIds = useMemo(
     () => (joinedTeams ? joinedTeams.map((team) => team.docId) : []),
@@ -40,11 +42,9 @@ const useSessionService = () => {
   const onFinishSession = async () => {
     if (!uid || !user || !stats) return
     const elapsedTime = await handleFinishSession(uid, teamIds, user.session)
-    console.log(elapsedTime)
 
     if (typeof elapsedTime === 'number') {
       const result = await progressStatsMainUpdate(uid, stats, elapsedTime)
-      console.log(result)
 
       setLastSessionStats(result)
     }

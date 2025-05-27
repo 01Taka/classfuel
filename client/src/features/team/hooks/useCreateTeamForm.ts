@@ -2,12 +2,12 @@ import { useEffect } from 'react'
 import { handleCreateTeam } from '../../join-team/services/team-services'
 import useAsyncHandler from '../../../hooks/async-processing/useAsyncHandler'
 import { useCurrentUserStore } from '../../../stores/user/currentUserStore'
-import useDailyReportService from '../../session/hooks/useDailyReportService'
 import useFormState from '../../../hooks/form/useFormState'
+import { useUserReportStore } from '../../../stores/user/userReportStore'
 
 export const useCreateTeamForm = (onSuccess?: () => void) => {
   const { user } = useCurrentUserStore()
-  const { getTodayReport } = useDailyReportService()
+  const { todayReport } = useUserReportStore()
 
   const { formState, hasEmptyInput, createInputProps } = useFormState<{
     name: string
@@ -17,9 +17,7 @@ export const useCreateTeamForm = (onSuccess?: () => void) => {
 
   const handleSubmit = async () => {
     if (!user) return
-
-    const report = await getTodayReport()
-    const todayStudyTime = report?.studyTime || 0
+    const todayStudyTime = todayReport?.studyTime || 0
 
     callAsyncFunction(handleCreateTeam, [user, todayStudyTime, formState.name])
   }

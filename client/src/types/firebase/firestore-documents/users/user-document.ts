@@ -1,7 +1,8 @@
-import { Timestamp } from 'firebase/firestore'
+import { FieldValue, Timestamp } from 'firebase/firestore'
 import {
   BaseDocumentRead,
   BaseDocumentWrite,
+  RemoveFieldValue,
 } from '../../firestore-document-types'
 import { Gender } from '../../util-document-types'
 
@@ -9,8 +10,13 @@ interface UserData {
   displayName: string
   birthdate: Timestamp
   gender: Gender
-  session: UserSession | null // 現在のセッション情報（nullの場合はセッション中でない）
   activeTeamId: string | null
+  session: UserSession | null // 現在のセッション情報（nullの場合はセッション中でない）
+  status: UserStatus // ユーザーの総学習状況
+}
+
+export interface UserStatus {
+  totalStudyDuration: number | FieldValue // ユーザーの総学習時間（ミリ秒単位）
 }
 
 export interface UserSession {
@@ -24,5 +30,6 @@ export interface UserSession {
   elapsedDuration: number
 }
 
-export type UserRead = BaseDocumentRead & UserData
+// 最終的な型
+export type UserRead = RemoveFieldValue<BaseDocumentRead & UserData>
 export type UserWrite = BaseDocumentWrite & UserData
